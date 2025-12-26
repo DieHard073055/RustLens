@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -10,7 +10,28 @@ export function QuizCard() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
-  if (!currentQuestion) {
+  // Shuffle options to randomize correct answer position
+  const shuffledOptions = useMemo(() => {
+    if (!currentQuestion) return null;
+
+    // Create array of indices
+    const indices = currentQuestion.options.map((_, i) => i);
+
+    // Fisher-Yates shuffle
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+
+    // Map to new options with their original indices
+    return indices.map(originalIndex => ({
+      text: currentQuestion.options[originalIndex],
+      originalIndex,
+      isCorrect: originalIndex === currentQuestion.correct
+    }));
+  }, [currentQuestion?.id]); // Re-shuffle when question changes
+
+  if (!currentQuestion || !shuffledOptions) {
     return (
       <div className="quiz-card">
         <p>Loading questions...</p>
@@ -24,9 +45,11 @@ export function QuizCard() {
   };
 
   const handleSubmit = async () => {
-    if (selectedAnswer === null) return;
+    if (selectedAnswer === null || !shuffledOptions) return;
 
-    const correct = await submitAnswer(selectedAnswer);
+    // Get the original index from the shuffled position
+    const originalIndex = shuffledOptions[selectedAnswer].originalIndex;
+    const correct = await submitAnswer(originalIndex);
     setIsCorrect(correct);
 
     if (settings?.explanationsEnabled) {
@@ -88,9 +111,9 @@ export function QuizCard() {
       </div>
 
       <div className="options">
-        {currentQuestion.options.map((option, index) => {
+        {shuffledOptions.map((option, index) => {
           const isSelected = selectedAnswer === index;
-          const isCorrectAnswer = index === currentQuestion.correct;
+          const isCorrectAnswer = option.isCorrect;
           const showCorrect = showExplanation && isCorrectAnswer;
           const showIncorrect = showExplanation && isSelected && !isCorrect;
 
@@ -104,7 +127,7 @@ export function QuizCard() {
               disabled={showExplanation}
             >
               <span className="option-letter">{String.fromCharCode(65 + index)}</span>
-              <span className="option-text">{option}</span>
+              <span className="option-text">{option.text}</span>
             </button>
           );
         })}
