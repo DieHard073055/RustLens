@@ -12,6 +12,7 @@ import {
   getAllProgress,
 } from '../lib/db';
 import { updateProgressAfterAnswer, selectNextQuestion } from '../lib/spacedRepetition';
+import { generatePerformanceReport, type PerformanceReport } from '../lib/reportGenerator';
 import type { Question, UserStats, AppSettings, UserProgress } from '../types/question';
 import questionsData from '../data/questions.json';
 
@@ -24,6 +25,7 @@ interface AppContextType {
   submitAnswer: (answerIndex: number) => Promise<boolean>;
   nextQuestion: () => void;
   updateUserSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
+  generateReport: () => Promise<PerformanceReport>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -159,6 +161,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSettings(updated);
   }
 
+  async function generateReport(): Promise<PerformanceReport> {
+    if (!stats) {
+      throw new Error('Stats not loaded');
+    }
+
+    const allProgress = await getAllProgress();
+    return generatePerformanceReport(stats, allProgress, questions);
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -170,6 +181,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         submitAnswer,
         nextQuestion,
         updateUserSettings,
+        generateReport,
       }}
     >
       {children}

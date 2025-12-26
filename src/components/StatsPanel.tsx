@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
+import { ReportModal } from './ReportModal';
 import './StatsPanel.css';
 
 export function StatsPanel() {
   const { stats } = useApp();
+  const [showReportModal, setShowReportModal] = useState(false);
 
   if (!stats) return null;
 
@@ -27,10 +30,16 @@ export function StatsPanel() {
   };
 
   return (
-    <div className="stats-panel">
-      <h2>Your Progress</h2>
+    <>
+      <div className="stats-panel">
+        <div className="stats-header">
+          <h2>Your Progress</h2>
+          <button className="generate-report-btn" onClick={() => setShowReportModal(true)}>
+            📊 Generate Report
+          </button>
+        </div>
 
-      <div className="stats-grid">
+        <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-value">{stats.totalQuestions}</div>
           <div className="stat-label">Questions Answered</div>
@@ -71,6 +80,9 @@ export function StatsPanel() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+
+      {showReportModal && <ReportModal onClose={() => setShowReportModal(false)} />}
+    </>
   );
 }
