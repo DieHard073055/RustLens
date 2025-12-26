@@ -1,0 +1,252 @@
+.quiz-card {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.category-badge {
+  background: var(--rust-orange);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.difficulty {
+  color: var(--warning);
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+.code-block {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+.code-block pre {
+  margin: 0;
+}
+
+.code-block code {
+  color: #e8e8e8;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.question {
+  margin-bottom: 1.5rem;
+}
+
+.question h3 {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: left;
+  width: 100%;
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--rust-orange);
+  transform: translateX(4px);
+}
+
+.option.selected {
+  background: rgba(206, 66, 43, 0.2);
+  border-color: var(--rust-orange);
+}
+
+.option.correct {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: var(--success);
+}
+
+.option.incorrect {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: var(--error);
+}
+
+.option:disabled {
+  cursor: default;
+  opacity: 0.9;
+}
+
+.option-letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-primary);
+  border-radius: 50%;
+  font-weight: 600;
+  color: var(--rust-orange);
+  flex-shrink: 0;
+}
+
+.option.correct .option-letter {
+  background: var(--success);
+  color: white;
+}
+
+.option.incorrect .option-letter {
+  background: var(--error);
+  color: white;
+}
+
+.option-text {
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.explanation {
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.correct-explanation {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: var(--success);
+}
+
+.incorrect-explanation {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: var(--error);
+}
+
+.explanation h4 {
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.correct-explanation h4 {
+  color: var(--success);
+}
+
+.incorrect-explanation h4 {
+  color: var(--error);
+}
+
+.explanation p {
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.rust-book-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--rust-orange);
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.rust-book-link:hover {
+  opacity: 0.8;
+}
+
+.quiz-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.submit-button,
+.next-button {
+  padding: 1rem 3rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.submit-button {
+  background: var(--rust-orange);
+  color: white;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #b33825;
+  transform: scale(1.05);
+}
+
+.next-button {
+  background: linear-gradient(135deg, var(--rust-orange) 0%, #ff6b4a 100%);
+  color: white;
+}
+
+.next-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(206, 66, 43, 0.4);
+}
+
+@media (max-width: 768px) {
+  .quiz-card {
+    padding: 1.5rem;
+  }
+
+  .code-block {
+    padding: 1rem;
+  }
+
+  .code-block code {
+    font-size: 0.85rem;
+  }
+
+  .option {
+    padding: 0.75rem 1rem;
+  }
+
+  .submit-button,
+  .next-button {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+  }
+}

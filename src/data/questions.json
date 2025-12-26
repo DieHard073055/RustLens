@@ -1,0 +1,692 @@
+[
+  {
+    "id": "own-001",
+    "category": "ownership",
+    "difficulty": 2,
+    "type": "spot_error",
+    "code": "fn main() {\n    let s = String::from(\"hello\");\n    let r1 = &s;\n    let r2 = &mut s;\n    println!(\"{}, {}\", r1, r2);\n}",
+    "question": "What's wrong with this code?",
+    "options": [
+      "Cannot have mutable and immutable references simultaneously",
+      "String::from is deprecated",
+      "println! cannot take two references",
+      "Missing semicolon"
+    ],
+    "correct": 0,
+    "explanation": "Rust's borrowing rules prevent having a mutable reference while immutable references exist. The immutable reference r1 is still in scope when we try to create r2.",
+    "error_line": 4,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+  },
+  {
+    "id": "own-002",
+    "category": "ownership",
+    "difficulty": 1,
+    "type": "will_compile",
+    "code": "fn main() {\n    let x = 5;\n    let y = x;\n    println!(\"{}\", x);\n}",
+    "question": "Will this code compile?",
+    "options": [
+      "Yes, because integers implement Copy",
+      "No, x was moved to y",
+      "Yes, but only in release mode",
+      "No, x is immutable"
+    ],
+    "correct": 0,
+    "explanation": "Integers implement the Copy trait, so assignment creates a copy rather than a move. Both x and y remain valid.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#stack-only-data-copy"
+  },
+  {
+    "id": "own-003",
+    "category": "ownership",
+    "difficulty": 3,
+    "type": "fix_code",
+    "code": "fn main() {\n    let mut v = vec![1, 2, 3];\n    let first = &v[0];\n    v.push(4);\n    println!(\"First: {}\", first);\n}",
+    "question": "How do you fix this borrowing violation?",
+    "options": [
+      "Move the push before creating the reference",
+      "Clone v before pushing",
+      "Use Rc<RefCell<Vec<i32>>>",
+      "Make first mutable"
+    ],
+    "correct": 0,
+    "explanation": "The immutable borrow 'first' prevents the mutable borrow needed for push. Moving the push before the borrow resolves this.",
+    "error_line": 3
+  },
+  {
+    "id": "own-004",
+    "category": "ownership",
+    "difficulty": 2,
+    "type": "predict_output",
+    "code": "fn take_ownership(s: String) {\n    println!(\"{}\", s);\n}\n\nfn main() {\n    let s = String::from(\"hello\");\n    take_ownership(s);\n    println!(\"{}\", s);\n}",
+    "question": "What happens when this runs?",
+    "options": [
+      "Compile error: value borrowed after move",
+      "Prints 'hello' twice",
+      "Runtime panic",
+      "Prints 'hello' then empty string"
+    ],
+    "correct": 0,
+    "explanation": "String doesn't implement Copy, so s is moved into take_ownership. Using s afterward is a compile error.",
+    "error_line": 8
+  },
+  {
+    "id": "life-001",
+    "category": "lifetimes",
+    "difficulty": 3,
+    "type": "fill_blank",
+    "code": "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {\n    if x.len() > y.len() { x } else { y }\n}",
+    "question": "What does the lifetime 'a represent?",
+    "options": [
+      "The returned reference lives as long as the shorter of x or y",
+      "The returned reference lives forever",
+      "x and y must have identical lifetimes",
+      "The function can only be called once"
+    ],
+    "correct": 0,
+    "explanation": "The lifetime annotation 'a means the returned reference will be valid for the overlap of x and y's lifetimes (i.e., the shorter lifetime).",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html"
+  },
+  {
+    "id": "life-002",
+    "category": "lifetimes",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "struct Excerpt<'a> {\n    part: &'a str,\n}\n\nfn main() {\n    let novel = String::from(\"Call me Ishmael.\");\n    let excerpt;\n    {\n        let first_sentence = novel.split('.').next().unwrap();\n        excerpt = Excerpt { part: first_sentence };\n    }\n    println!(\"{}\", excerpt.part);\n}",
+    "question": "Is there a lifetime issue here?",
+    "options": [
+      "No issue - first_sentence outlives excerpt",
+      "Yes - first_sentence dropped before excerpt is used",
+      "Yes - novel needs to be mutable",
+      "No issue - String has 'static lifetime"
+    ],
+    "correct": 0,
+    "explanation": "first_sentence is a &str slice into novel, which outlives the inner scope. The excerpt remains valid.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html#lifetime-annotations-in-struct-definitions"
+  },
+  {
+    "id": "err-001",
+    "category": "error_handling",
+    "difficulty": 2,
+    "type": "idiomatic",
+    "code": "fn read_number(s: &str) -> Result<i32, std::num::ParseIntError> {\n    s.parse::<i32>()\n}",
+    "question": "Which is the most idiomatic way to use this?",
+    "options": [
+      "let num = read_number(\"42\")?;",
+      "let num = read_number(\"42\").unwrap();",
+      "let num = match read_number(\"42\") { Ok(n) => n, Err(_) => panic!() };",
+      "let num = read_number(\"42\").expect(\"parse failed\");"
+    ],
+    "correct": 0,
+    "explanation": "The ? operator is the idiomatic way to propagate errors, making code clean and composable.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#a-shortcut-for-propagating-errors-the--operator"
+  },
+  {
+    "id": "err-002",
+    "category": "error_handling",
+    "difficulty": 3,
+    "type": "fix_code",
+    "code": "fn divide(a: i32, b: i32) -> i32 {\n    if b == 0 {\n        panic!(\"Division by zero\");\n    }\n    a / b\n}",
+    "question": "How should this be refactored for better error handling?",
+    "options": [
+      "Return Option<i32> or Result<i32, Error>",
+      "Use assert! instead of panic!",
+      "Add #[must_use] attribute",
+      "Use unwrap_or_default()"
+    ],
+    "correct": 0,
+    "explanation": "Returning Option or Result allows callers to handle the error case, making the function more composable and testable.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch09-00-error-handling.html"
+  },
+  {
+    "id": "err-003",
+    "category": "error_handling",
+    "difficulty": 2,
+    "type": "predict_output",
+    "code": "fn main() {\n    let x: Option<i32> = None;\n    let y = x.unwrap_or(5);\n    println!(\"{}\", y);\n}",
+    "question": "What does this print?",
+    "options": [
+      "5",
+      "None",
+      "Panics with 'called Option::unwrap() on a None value'",
+      "0"
+    ],
+    "correct": 0,
+    "explanation": "unwrap_or provides a default value when the Option is None, avoiding a panic.",
+    "rust_book_link": "https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or"
+  },
+  {
+    "id": "trait-001",
+    "category": "traits_generics",
+    "difficulty": 3,
+    "type": "spot_error",
+    "code": "fn print_it<T>(item: T) {\n    println!(\"{}\", item);\n}",
+    "question": "What's missing?",
+    "options": [
+      "T must be bound with Display trait",
+      "T must be 'static",
+      "T must implement Copy",
+      "Nothing, this works fine"
+    ],
+    "correct": 0,
+    "explanation": "println! with {} requires the Display trait. The function needs: fn print_it<T: Display>(item: T)",
+    "error_line": 2,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch10-02-traits.html#trait-bound-syntax"
+  },
+  {
+    "id": "trait-002",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "// Which syntax is preferred for multiple trait bounds?",
+    "question": "Choose the most idiomatic multiple trait bound syntax:",
+    "options": [
+      "fn foo<T>(item: T) where T: Display + Clone",
+      "fn foo<T: Display + Clone>(item: T)",
+      "fn foo<T>(item: T) { static_assert!(T: Display + Clone); }",
+      "Both A and B are equally idiomatic"
+    ],
+    "correct": 3,
+    "explanation": "Both forms are idiomatic. Use inline bounds for simple cases, where clauses for complex bounds or better readability.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch10-02-traits.html#clearer-trait-bounds-with-where-clauses"
+  },
+  {
+    "id": "trait-003",
+    "category": "traits_generics",
+    "difficulty": 3,
+    "type": "will_compile",
+    "code": "trait Animal {\n    fn make_sound(&self);\n}\n\nstruct Dog;\n\nimpl Animal for Dog {\n    fn make_sound(&self) {\n        println!(\"Woof!\");\n    }\n}\n\nfn main() {\n    let animals: Vec<Animal> = vec![Dog];\n}",
+    "question": "Will this compile?",
+    "options": [
+      "No, trait objects need Box or & (e.g., Vec<Box<dyn Animal>>)",
+      "Yes, traits can be used directly as types",
+      "No, Dog needs to derive Animal",
+      "Yes, but only with #![feature(trait_upcasting)]"
+    ],
+    "correct": 0,
+    "explanation": "Trait objects must be behind a pointer (Box, &, etc.) because they're dynamically sized. Use Vec<Box<dyn Animal>>.",
+    "error_line": 14,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch17-02-trait-objects.html"
+  },
+  {
+    "id": "iter-001",
+    "category": "iterators_closures",
+    "difficulty": 2,
+    "type": "idiomatic",
+    "code": "let v = vec![1, 2, 3, 4, 5];",
+    "question": "Most idiomatic way to sum all elements?",
+    "options": [
+      "v.iter().sum()",
+      "let mut sum = 0; for x in v { sum += x; }",
+      "v.into_iter().fold(0, |acc, x| acc + x)",
+      "v.iter().reduce(|a, b| a + b).unwrap()"
+    ],
+    "correct": 0,
+    "explanation": "The sum() method is specifically designed for this use case and is the most concise and idiomatic.",
+    "rust_book_link": "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.sum"
+  },
+  {
+    "id": "iter-002",
+    "category": "iterators_closures",
+    "difficulty": 3,
+    "type": "predict_output",
+    "code": "let v = vec![1, 2, 3];\nlet doubled: Vec<_> = v.iter().map(|x| x * 2).collect();\nprintln!(\"{:?}\", doubled);",
+    "question": "What does this print?",
+    "options": [
+      "[2, 4, 6]",
+      "[1, 2, 3]",
+      "Compile error",
+      "[]"
+    ],
+    "correct": 0,
+    "explanation": "map() transforms each element, and collect() gathers the results into a Vec. Output: [2, 4, 6]",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch13-02-iterators.html"
+  },
+  {
+    "id": "iter-003",
+    "category": "iterators_closures",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "let mut v = vec![1, 2, 3];\nv.iter().for_each(|x| *x += 1);\nprintln!(\"{:?}\", v);",
+    "question": "What's wrong?",
+    "options": [
+      "iter() gives immutable refs; need iter_mut()",
+      "for_each doesn't exist",
+      "Can't modify v while iterating",
+      "Nothing, this works"
+    ],
+    "correct": 0,
+    "explanation": "iter() provides &T. To modify elements, use iter_mut() which provides &mut T.",
+    "error_line": 2,
+    "rust_book_link": "https://doc.rust-lang.org/std/vec/struct.Vec.html#method.iter_mut"
+  },
+  {
+    "id": "match-001",
+    "category": "pattern_matching",
+    "difficulty": 2,
+    "type": "fix_code",
+    "code": "match some_option {\n    Some(x) => println!(\"{}\", x),\n}",
+    "question": "What's missing?",
+    "options": [
+      "None arm - patterns must be exhaustive",
+      "Default case with 'default =>' ",
+      "Type annotation for x",
+      "Nothing, this is valid"
+    ],
+    "correct": 0,
+    "explanation": "Rust requires exhaustive pattern matching. You must handle the None case or use a wildcard pattern.",
+    "error_line": 1,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch06-02-match.html#matches-are-exhaustive"
+  },
+  {
+    "id": "match-002",
+    "category": "pattern_matching",
+    "difficulty": 3,
+    "type": "idiomatic",
+    "code": "let x = Some(5);",
+    "question": "Most idiomatic way to run code only if Some?",
+    "options": [
+      "if let Some(val) = x { /* use val */ }",
+      "match x { Some(val) => { /* use val */ }, None => {} }",
+      "if x.is_some() { let val = x.unwrap(); /* use val */ }",
+      "x.map(|val| { /* use val */ });"
+    ],
+    "correct": 0,
+    "explanation": "if let is specifically designed for this pattern and is more concise than a match with empty None arm.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch06-03-if-let.html"
+  },
+  {
+    "id": "match-003",
+    "category": "pattern_matching",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "let x = 5;\nmatch x {\n    1..=5 => println!(\"one through five\"),\n    _ => println!(\"something else\"),\n}",
+    "question": "What prints?",
+    "options": [
+      "one through five",
+      "something else",
+      "Compile error: range patterns not allowed",
+      "5"
+    ],
+    "correct": 0,
+    "explanation": "Range patterns (1..=5) match inclusive ranges. 5 is in the range, so first arm matches.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch18-03-pattern-syntax.html#matching-ranges-of-values-with-"
+  },
+  {
+    "id": "async-001",
+    "category": "async_await",
+    "difficulty": 3,
+    "type": "spot_error",
+    "code": "async fn fetch_data() -> String {\n    \"data\".to_string()\n}\n\nfn main() {\n    let data = fetch_data();\n    println!(\"{}\", data);\n}",
+    "question": "What's wrong?",
+    "options": [
+      "async functions return Future, need .await and async runtime",
+      "fetch_data needs to be marked unsafe",
+      "String can't be returned from async fn",
+      "main needs #[tokio::main]"
+    ],
+    "correct": 0,
+    "explanation": "async fn returns a Future that must be awaited. Also need an async runtime and async context.",
+    "error_line": 6,
+    "rust_book_link": "https://rust-lang.github.io/async-book/01_getting_started/04_async_await_primer.html"
+  },
+  {
+    "id": "async-002",
+    "category": "async_await",
+    "difficulty": 4,
+    "type": "will_compile",
+    "code": "#[tokio::main]\nasync fn main() {\n    let future = async {\n        println!(\"Hello\");\n    };\n    println!(\"World\");\n}",
+    "question": "What happens?",
+    "options": [
+      "Prints 'World' only - future never awaited",
+      "Prints 'Hello' then 'World'",
+      "Compile error",
+      "Prints 'World' then 'Hello'"
+    ],
+    "correct": 0,
+    "explanation": "Futures are lazy - they don't execute until awaited. The async block is never awaited, so only 'World' prints.",
+    "rust_book_link": "https://rust-lang.github.io/async-book/02_execution/01_chapter.html"
+  },
+  {
+    "id": "std-001",
+    "category": "std_library",
+    "difficulty": 2,
+    "type": "idiomatic",
+    "code": "let s = \"hello world\";",
+    "question": "How to split into words idiomatically?",
+    "options": [
+      "s.split_whitespace()",
+      "s.split(' ')",
+      "s.split(\" \")",
+      "All are equally idiomatic"
+    ],
+    "correct": 0,
+    "explanation": "split_whitespace() handles all whitespace chars (spaces, tabs, newlines) and consecutive whitespace correctly.",
+    "rust_book_link": "https://doc.rust-lang.org/std/primitive.str.html#method.split_whitespace"
+  },
+  {
+    "id": "std-002",
+    "category": "std_library",
+    "difficulty": 3,
+    "type": "predict_output",
+    "code": "let v = vec![1, 2, 3];\nlet v2 = v.clone();\nprintln!(\"{}\", v.len() + v2.len());",
+    "question": "What prints?",
+    "options": [
+      "6",
+      "3",
+      "Compile error",
+      "Runtime panic"
+    ],
+    "correct": 0,
+    "explanation": "clone() creates a deep copy. Both v and v2 have length 3, so 3 + 3 = 6.",
+    "rust_book_link": "https://doc.rust-lang.org/std/clone/trait.Clone.html"
+  },
+  {
+    "id": "macro-001",
+    "category": "macros",
+    "difficulty": 2,
+    "type": "spot_error",
+    "code": "println!(\"x = {}\");",
+    "question": "What's wrong?",
+    "options": [
+      "Missing argument for {}",
+      "Should use print! instead",
+      "Needs #[macro_use]",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "The format string has a placeholder {} but no corresponding argument. Should be println!(\"x = {}\", x);",
+    "error_line": 1
+  },
+  {
+    "id": "macro-002",
+    "category": "macros",
+    "difficulty": 3,
+    "type": "idiomatic",
+    "code": "let v = vec![1, 2, 3];",
+    "question": "What does vec! macro expand to approximately?",
+    "options": [
+      "{ let mut temp = Vec::new(); temp.push(1); temp.push(2); temp.push(3); temp }",
+      "Vector::from([1, 2, 3])",
+      "Array::to_vec(&[1, 2, 3])",
+      "[1, 2, 3].into()"
+    ],
+    "correct": 0,
+    "explanation": "vec! is syntactic sugar that creates a Vec and pushes each element (optimized with capacity pre-allocation).",
+    "rust_book_link": "https://doc.rust-lang.org/std/macro.vec.html"
+  },
+  {
+    "id": "unsafe-001",
+    "category": "unsafe",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "let mut num = 5;\nlet r1 = &num as *const i32;\nlet r2 = &mut num as *mut i32;\nunsafe {\n    println!(\"{}\", *r1);\n}",
+    "question": "What's the issue?",
+    "options": [
+      "Creating mutable and immutable raw pointers simultaneously is undefined behavior",
+      "Raw pointers can't be dereferenced",
+      "println! can't be used in unsafe blocks",
+      "Nothing, this is safe"
+    ],
+    "correct": 0,
+    "explanation": "While creating raw pointers is safe, having aliasing mutable and immutable raw pointers can lead to UB if used incorrectly.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html"
+  },
+  {
+    "id": "unsafe-002",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "fn main() {\n    let address = 0x012345usize;\n    let r = address as *const i32;\n    unsafe {\n        println!(\"{}\", *r);\n    }\n}",
+    "question": "Will this compile?",
+    "options": [
+      "Yes, but likely causes runtime crash/UB",
+      "No, can't cast usize to pointer",
+      "Yes, and safely prints 0",
+      "No, println! not allowed in unsafe"
+    ],
+    "correct": 0,
+    "explanation": "This compiles but dereferencing an arbitrary memory address is undefined behavior and will likely crash.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html#dereferencing-a-raw-pointer"
+  },
+  {
+    "id": "life-003",
+    "category": "lifetimes",
+    "difficulty": 4,
+    "type": "fix_code",
+    "code": "struct Foo {\n    x: &str,\n}",
+    "question": "What's needed to make this compile?",
+    "options": [
+      "Add lifetime parameter: struct Foo<'a> { x: &'a str }",
+      "Change to String instead of &str",
+      "Add #[derive(Lifetime)]",
+      "Use Box<str>"
+    ],
+    "correct": 0,
+    "explanation": "References in structs need explicit lifetime annotations so the compiler can track how long they're valid.",
+    "error_line": 2,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html#lifetime-annotations-in-struct-definitions"
+  },
+  {
+    "id": "own-005",
+    "category": "ownership",
+    "difficulty": 3,
+    "type": "idiomatic",
+    "code": "fn process(data: &Vec<String>) { }",
+    "question": "What's a better signature?",
+    "options": [
+      "fn process(data: &[String])",
+      "fn process(data: Vec<String>)",
+      "fn process(data: &mut Vec<String>)",
+      "fn process(data: Box<Vec<String>>)"
+    ],
+    "correct": 0,
+    "explanation": "Using &[T] instead of &Vec<T> is more flexible - it accepts Vec, arrays, and slices. This is called 'deref coercion'.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods"
+  },
+  {
+    "id": "err-004",
+    "category": "error_handling",
+    "difficulty": 3,
+    "type": "idiomatic",
+    "code": "fn parse_config(s: &str) -> Result<Config, Box<dyn Error>> { }",
+    "question": "When is Box<dyn Error> preferred over specific error types?",
+    "options": [
+      "In applications when you don't want to define custom error types",
+      "In libraries for public APIs",
+      "Never, always use anyhow::Error",
+      "Only in async code"
+    ],
+    "correct": 0,
+    "explanation": "Box<dyn Error> is convenient for applications. Libraries should use specific error types for better API clarity.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+  },
+  {
+    "id": "trait-004",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "trait Greet {\n    fn greet(&self) { println!(\"Hello!\"); }\n}\n\nstruct Person;\n\nimpl Greet for Person {\n    fn greet(&self) { println!(\"Hi!\"); }\n}\n\nfn main() {\n    let p = Person;\n    p.greet();\n}",
+    "question": "What prints?",
+    "options": [
+      "Hi!",
+      "Hello!",
+      "Compile error: ambiguous method",
+      "Both messages"
+    ],
+    "correct": 0,
+    "explanation": "The implementation in the impl block overrides the default trait implementation. Prints 'Hi!'.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch10-02-traits.html#default-implementations"
+  },
+  {
+    "id": "iter-004",
+    "category": "iterators_closures",
+    "difficulty": 3,
+    "type": "spot_error",
+    "code": "let v = vec![1, 2, 3];\nlet sum = v.iter().sum();\nprintln!(\"{}\", sum);",
+    "question": "What's wrong?",
+    "options": [
+      "sum needs type annotation: sum::<i32>()",
+      "iter() should be into_iter()",
+      "sum() doesn't exist",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "sum() needs to know the target type. Use type annotation: let sum: i32 = ... or v.iter().sum::<i32>()",
+    "error_line": 2
+  },
+  {
+    "id": "match-004",
+    "category": "pattern_matching",
+    "difficulty": 3,
+    "type": "idiomatic",
+    "code": "let point = (0, 5);",
+    "question": "How to destructure and use only y coordinate?",
+    "options": [
+      "let (_, y) = point;",
+      "let (x, y) = point; // ignore x",
+      "let y = point.1;",
+      "let [_, y] = point;"
+    ],
+    "correct": 0,
+    "explanation": "Using _ in destructuring explicitly shows you're ignoring that value. More idiomatic than accessing .1.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch18-03-pattern-syntax.html#ignoring-values-in-a-pattern"
+  },
+  {
+    "id": "own-006",
+    "category": "ownership",
+    "difficulty": 2,
+    "type": "will_compile",
+    "code": "fn main() {\n    let s1 = String::from(\"hello\");\n    let s2 = s1;\n    let s3 = s1;\n    println!(\"{}\", s2);\n}",
+    "question": "Will this compile?",
+    "options": [
+      "No, s1 moved to s2, can't move again to s3",
+      "Yes, String implements Copy",
+      "Yes, but s3 will be empty",
+      "No, println! can't use moved value"
+    ],
+    "correct": 0,
+    "explanation": "s1 is moved to s2 in line 3. Line 4 tries to use s1 again, which is a compile error.",
+    "error_line": 4,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#variables-and-data-interacting-with-move"
+  },
+  {
+    "id": "std-003",
+    "category": "std_library",
+    "difficulty": 2,
+    "type": "idiomatic",
+    "code": "let s = \"42\";",
+    "question": "Best way to convert to i32?",
+    "options": [
+      "s.parse::<i32>()",
+      "i32::from_str(s)",
+      "s.to_i32()",
+      "s.into::<i32>()"
+    ],
+    "correct": 0,
+    "explanation": "parse() is the idiomatic method for parsing strings into numbers. It returns Result<T, ParseError>.",
+    "rust_book_link": "https://doc.rust-lang.org/std/primitive.str.html#method.parse"
+  },
+  {
+    "id": "err-005",
+    "category": "error_handling",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "fn read_file() -> Result<String, io::Error> {\n    let mut file = File::open(\"data.txt\")?;\n    let mut contents = String::new();\n    file.read_to_string(&mut contents)?;\n    Ok(contents)\n}\n\nfn main() {\n    let data = read_file()?;\n    println!(\"{}\", data);\n}",
+    "question": "What's wrong with main?",
+    "options": [
+      "main must return Result to use ?",
+      "? operator not allowed in main",
+      "read_file() needs .unwrap()",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "The ? operator can only be used in functions that return Result or Option. main needs: fn main() -> Result<(), Box<dyn Error>>",
+    "error_line": 9,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#a-shortcut-for-propagating-errors-the--operator"
+  },
+  {
+    "id": "trait-005",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "fn process_items(items: Vec<Box<dyn Display>>) { }",
+    "question": "What's a potential issue with this signature?",
+    "options": [
+      "Not object-safe - can't return impl Iterator or clone",
+      "Box has overhead, should use &dyn",
+      "Display requires 'static lifetime",
+      "Should use impl Display instead"
+    ],
+    "correct": 1,
+    "explanation": "If you don't need ownership, &dyn Display is more efficient than Box<dyn Display>. Consider Vec<&dyn Display> instead.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch17-02-trait-objects.html#trait-objects-perform-dynamic-dispatch"
+  },
+  {
+    "id": "iter-005",
+    "category": "iterators_closures",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "let v = vec![1, 2, 3, 4, 5];\nlet result: Vec<_> = v.iter()\n    .filter(|&x| x % 2 == 0)\n    .map(|x| x * 2)\n    .collect();\nprintln!(\"{:?}\", result);",
+    "question": "What prints?",
+    "options": [
+      "[4, 8]",
+      "[2, 4, 6, 8, 10]",
+      "[2, 4]",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "filter keeps only even numbers (2, 4), then map doubles them (4, 8). Output: [4, 8]",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch13-02-iterators.html"
+  },
+  {
+    "id": "async-003",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "#[tokio::main]\nasync fn main() {\n    let mut handles = vec![];\n    for i in 0..10 {\n        handles.push(tokio::spawn(async {\n            println!(\"{}\", i);\n        }));\n    }\n}",
+    "question": "What's the issue?",
+    "options": [
+      "Closure captures i by reference, but i doesn't live long enough",
+      "tokio::spawn requires Send bound",
+      "Can't use println! in async block",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "i is captured by reference, but the loop variable doesn't outlive the spawned tasks. Use async move { } to capture by value.",
+    "error_line": 5,
+    "rust_book_link": "https://rust-lang.github.io/async-book/03_async_await/01_chapter.html"
+  },
+  {
+    "id": "match-005",
+    "category": "pattern_matching",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "enum Message {\n    Quit,\n    Move { x: i32, y: i32 },\n    Write(String),\n}",
+    "question": "How to match Move and bind coordinates?",
+    "options": [
+      "Message::Move { x, y } => { }",
+      "Message::Move(x, y) => { }",
+      "Message::Move { .x, .y } => { }",
+      "Message::Move => { let x = msg.x; }"
+    ],
+    "correct": 0,
+    "explanation": "Struct-like enum variants are destructured with { field_name, ... } syntax.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch18-03-pattern-syntax.html#destructuring-enums"
+  },
+  {
+    "id": "life-004",
+    "category": "lifetimes",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "fn first_word(s: &str) -> &str {\n    let bytes = s.as_bytes();\n    for (i, &item) in bytes.iter().enumerate() {\n        if item == b' ' {\n            return &s[0..i];\n        }\n    }\n    &s[..]\n}",
+    "question": "Does this need explicit lifetime annotations?",
+    "options": [
+      "No, lifetime elision rules apply",
+      "Yes, needs 'a on both parameters",
+      "Yes, but only on return type",
+      "No, because it uses slices"
+    ],
+    "correct": 0,
+    "explanation": "Lifetime elision rule: when there's one input lifetime, it's assigned to all output lifetimes. Explicit annotations not needed.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html#lifetime-elision"
+  }
+]

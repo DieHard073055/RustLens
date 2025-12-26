@@ -1,0 +1,90 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+.app.loading {
+  justify-content: center;
+  align-items: center;
+}
+
+.loader {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.main-content {
+  flex: 1;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.view-toggle button {
+  padding: 0.75rem 2rem;
+  border: 2px solid var(--rust-orange);
+  background: transparent;
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-toggle button.active {
+  background: var(--rust-orange);
+  color: white;
+}
+
+.view-toggle button:hover:not(.active) {
+  background: rgba(206, 66, 43, 0.1);
+}
+
+.app-footer {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.app-footer a {
+  color: var(--rust-orange);
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.app-footer a:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem 0.5rem;
+  }
+
+  .view-toggle {
+    gap: 0.5rem;
+  }
+
+  .view-toggle button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
