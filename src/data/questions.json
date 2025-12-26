@@ -688,5 +688,996 @@
     "correct": 0,
     "explanation": "Lifetime elision rule: when there's one input lifetime, it's assigned to all output lifetimes. Explicit annotations not needed.",
     "rust_book_link": "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html#lifetime-elision"
+  },
+  {
+    "id": "macro-001",
+    "category": "macros",
+    "difficulty": 3,
+    "type": "spot_error",
+    "code": "macro_rules! double {\n    ($x:expr) => { $x + $x };\n}\n\nfn main() {\n    let result = double!(2 + 3);\n    println!(\"{}\", result);\n}",
+    "question": "What does this print?",
+    "options": [
+      "8 (due to macro hygiene issues - expands to 2 + 3 + 2 + 3)",
+      "10",
+      "Compile error",
+      "5"
+    ],
+    "correct": 0,
+    "explanation": "The macro expands to '2 + 3 + 2 + 3' which equals 8, not 10. Use parentheses: ($x) + ($x) to fix.",
+    "error_line": 2,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-002",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "fix_code",
+    "code": "macro_rules! create_function {\n    ($func_name:ident) => {\n        fn $func_name() {\n            println!(\"You called {:?}()\", stringify!($func_name));\n        }\n    };\n}\n\ncreate_function!(foo);\ncreate_function!(bar);",
+    "question": "What does stringify! do in this macro?",
+    "options": [
+      "Converts the identifier to a string literal at compile time",
+      "Converts the value to a String at runtime",
+      "Formats the identifier for debug output",
+      "Creates a static string reference"
+    ],
+    "correct": 0,
+    "explanation": "stringify! converts tokens into string literals during macro expansion at compile time, without runtime overhead.",
+    "rust_book_link": "https://doc.rust-lang.org/std/macro.stringify.html"
+  },
+  {
+    "id": "macro-003",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "macro_rules! calculate {\n    (eval $e:expr) => {{\n        let val: usize = $e;\n        println!(\"{} = {}\", stringify!{$e}, val);\n    }};\n}\n\nfn main() {\n    calculate! {\n        eval 1 + 2\n    }\n}",
+    "question": "Will this compile?",
+    "options": [
+      "Yes, the double braces create a block expression",
+      "No, invalid macro syntax",
+      "No, stringify needs parentheses",
+      "Yes, but only in Rust 2021 edition"
+    ],
+    "correct": 0,
+    "explanation": "The {{ }} creates a block expression in the macro, allowing local variables. This is a common pattern for hygiene.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-004",
+    "category": "macros",
+    "difficulty": 3,
+    "type": "predict_output",
+    "code": "macro_rules! my_vec {\n    ( $( $x:expr ),* ) => {\n        {\n            let mut temp_vec = Vec::new();\n            $(\n                temp_vec.push($x);\n            )*\n            temp_vec\n        }\n    };\n}\n\nfn main() {\n    let v = my_vec![1, 2, 3];\n    println!(\"{:?}\", v);\n}",
+    "question": "What does this print?",
+    "options": [
+      "[1, 2, 3]",
+      "Compile error: repetition syntax",
+      "[3]",
+      "[]"
+    ],
+    "correct": 0,
+    "explanation": "The $( )* pattern repeats the code for each comma-separated expression, creating a vector with all elements.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html#declarative-macros-with-macro_rules-for-general-metaprogramming"
+  },
+  {
+    "id": "macro-005",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "macro_rules! make_fn {\n    ($name:ident, $value:expr) => {\n        fn $name() -> i32 {\n            $value\n        }\n    };\n}\n\nmake_fn!(get_five, 5);\nmake_fn!(get_x, x);",
+    "question": "What's the issue?",
+    "options": [
+      "x is not defined in the macro invocation context",
+      "Can't use expr in return position",
+      "Function names must be quoted",
+      "Nothing, this works fine"
+    ],
+    "correct": 0,
+    "explanation": "The second invocation tries to use 'x' which doesn't exist. Macros don't capture variables from the caller's scope.",
+    "error_line": 10,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-006",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Which macro pattern is more correct?",
+    "question": "For a macro that takes optional trailing comma:",
+    "options": [
+      "($($x:expr),* $(,)?) - allows optional trailing comma",
+      "($($x:expr),*) - no trailing comma",
+      "($($x:expr,)*) - requires trailing comma",
+      "All are equivalent"
+    ],
+    "correct": 0,
+    "explanation": "The $(,)? pattern allows an optional trailing comma, matching Rust's standard syntax conventions.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/macros-by-example.html"
+  },
+  {
+    "id": "macro-007",
+    "category": "macros",
+    "difficulty": 3,
+    "type": "will_compile",
+    "code": "macro_rules! debug {\n    ($val:expr) => {\n        println!(\"{} = {:?}\", stringify!($val), $val);\n    };\n}\n\nfn main() {\n    let x = 5;\n    debug!(x);\n    debug!(x + 10);\n}",
+    "question": "What happens?",
+    "options": [
+      "Prints: x = 5 and x + 10 = 15",
+      "Compile error: can't stringify expressions",
+      "Prints: 5 = 5 and 15 = 15",
+      "Compile error: duplicate macro invocation"
+    ],
+    "correct": 0,
+    "explanation": "stringify! converts the tokens to a string, preserving the original expression text. Both invocations work correctly.",
+    "rust_book_link": "https://doc.rust-lang.org/std/macro.stringify.html"
+  },
+  {
+    "id": "macro-008",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "fix_code",
+    "code": "macro_rules! hashmap {\n    ($($key:expr => $val:expr),*) => {{\n        let mut map = HashMap::new();\n        $( map.insert($key, $val); )*\n        map\n    }};\n}",
+    "question": "What's missing for this to compile?",
+    "options": [
+      "use std::collections::HashMap; before the macro",
+      "Nothing, macros don't need imports",
+      "#[macro_use] attribute",
+      "pub modifier on macro_rules"
+    ],
+    "correct": 0,
+    "explanation": "The macro code is expanded in the caller's scope, which needs HashMap in scope. Macros can't provide imports.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-009",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "macro_rules! count {\n    () => { 0 };\n    ($x:tt $($xs:tt)*) => { 1 + count!($($xs)*) };\n}\n\nfn main() {\n    let n = count!(a b c d);\n    println!(\"{}\", n);\n}",
+    "question": "Is there an issue with this recursive macro?",
+    "options": [
+      "No, it correctly counts tokens as 4",
+      "Yes, infinite recursion",
+      "Yes, tt fragment can't be used this way",
+      "Yes, arithmetic in macros is not allowed"
+    ],
+    "correct": 0,
+    "explanation": "This is a valid recursive macro pattern. tt (token tree) matches any single token, enabling counting.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/macros-by-example.html"
+  },
+  {
+    "id": "macro-010",
+    "category": "macros",
+    "difficulty": 3,
+    "type": "predict_output",
+    "code": "macro_rules! test {\n    ($val:expr) => {\n        println!(\"Expression: {}\", $val);\n    };\n    ($val:tt) => {\n        println!(\"Token: {}\", stringify!($val));\n    };\n}\n\nfn main() {\n    test!(5 + 5);\n}",
+    "question": "Which arm matches?",
+    "options": [
+      "First arm (expr) - expressions are tried before token trees",
+      "Second arm (tt)",
+      "Both arms match, compilation error",
+      "Neither, error"
+    ],
+    "correct": 0,
+    "explanation": "Macro arms are tried in order. expr matches valid expressions, so the first arm matches before reaching tt.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/macros-by-example.html"
+  },
+  {
+    "id": "unsafe-001",
+    "category": "unsafe",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "fn main() {\n    let x = 5;\n    let ptr = &x as *const i32;\n    unsafe {\n        let val = *ptr;\n        println!(\"{}\", val);\n    }\n    drop(x);\n}",
+    "question": "What's the problem?",
+    "options": [
+      "drop(x) is wrong - x is Copy type, can't be dropped explicitly",
+      "Dereferencing ptr is undefined behavior",
+      "Can't create raw pointer from reference",
+      "Nothing, this is safe"
+    ],
+    "correct": 0,
+    "explanation": "i32 implements Copy, so drop(x) doesn't compile. The pointer dereference is actually safe here since x is still valid.",
+    "error_line": 8,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html"
+  },
+  {
+    "id": "unsafe-002",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "use std::ptr;\n\nfn main() {\n    let mut x = 10;\n    let ptr = &mut x as *mut i32;\n    \n    unsafe {\n        ptr::write(ptr, 20);\n    }\n    \n    println!(\"{}\", x);\n}",
+    "question": "Will this compile and what does it print?",
+    "options": [
+      "Yes, prints 20 - ptr::write overwrites the value",
+      "No, ptr::write requires ownership",
+      "Yes, prints 10 - write doesn't affect x",
+      "No, can't convert &mut to *mut"
+    ],
+    "correct": 0,
+    "explanation": "ptr::write overwrites the memory at the pointer location without dropping the old value. Prints 20.",
+    "rust_book_link": "https://doc.rust-lang.org/std/ptr/fn.write.html"
+  },
+  {
+    "id": "unsafe-003",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "fn main() {\n    let mut data = vec![1, 2, 3];\n    let ptr = data.as_mut_ptr();\n    \n    data.push(4);\n    \n    unsafe {\n        *ptr = 10;\n    }\n}",
+    "question": "What's the undefined behavior?",
+    "options": [
+      "push() may reallocate, invalidating ptr",
+      "Can't get mut pointer from Vec",
+      "Writing through ptr after push is always safe",
+      "as_mut_ptr() requires unsafe"
+    ],
+    "correct": 0,
+    "explanation": "push() can trigger reallocation, making ptr a dangling pointer. Writing to it is undefined behavior.",
+    "error_line": 7,
+    "rust_book_link": "https://doc.rust-lang.org/nomicon/vec/vec.html"
+  },
+  {
+    "id": "unsafe-004",
+    "category": "unsafe",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "// Which is safer?",
+    "question": "To read from a raw pointer:",
+    "options": [
+      "ptr::read(ptr) - handles unaligned/uninitialized better",
+      "*ptr - simpler and equivalent",
+      "ptr.read() - method syntax is clearer",
+      "All equally safe in unsafe blocks"
+    ],
+    "correct": 0,
+    "explanation": "ptr::read() is more flexible for unaligned/packed data and makes intent clearer. Simple deref assumes aligned access.",
+    "rust_book_link": "https://doc.rust-lang.org/std/ptr/fn.read.html"
+  },
+  {
+    "id": "unsafe-005",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "struct Node {\n    value: i32,\n    next: *mut Node,\n}\n\nfn traverse(mut ptr: *mut Node) {\n    unsafe {\n        while !ptr.is_null() {\n            println!(\"{}\", (*ptr).value);\n            ptr = (*ptr).next;\n        }\n    }\n}",
+    "question": "What critical check is missing?",
+    "options": [
+      "Nothing - is_null() check is sufficient for this use",
+      "Need to check if ptr is aligned",
+      "Need to verify ptr points to valid memory",
+      "Need to check for cycles"
+    ],
+    "correct": 2,
+    "explanation": "is_null() only checks for null. The pointer could be invalid/dangling. Real code needs validity guarantees from construction.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html"
+  },
+  {
+    "id": "unsafe-006",
+    "category": "unsafe",
+    "difficulty": 3,
+    "type": "will_compile",
+    "code": "fn main() {\n    let x = 42;\n    let ptr = &x as *const i32 as *mut i32;\n    \n    unsafe {\n        *ptr = 100;\n    }\n}",
+    "question": "What happens?",
+    "options": [
+      "Undefined behavior - const to mut cast doesn't grant write permission",
+      "Compiles and sets x to 100",
+      "Compile error - can't cast const to mut",
+      "Compiles but runtime error"
+    ],
+    "correct": 0,
+    "explanation": "Casting *const to *mut compiles but doesn't make the data mutable. Writing through it is UB since x is immutable.",
+    "error_line": 5,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html"
+  },
+  {
+    "id": "unsafe-007",
+    "category": "unsafe",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "use std::mem;\n\nfn main() {\n    let x: i32 = 42;\n    let y: f32 = unsafe { mem::transmute(x) };\n    println!(\"{}\", y);\n}",
+    "question": "What does this print?",
+    "options": [
+      "5.88e-44 (bit pattern of 42 reinterpreted as f32)",
+      "42.0",
+      "Compile error: incompatible types",
+      "Undefined behavior"
+    ],
+    "correct": 0,
+    "explanation": "transmute reinterprets the bit pattern without conversion. 42 as bits represents a very small float.",
+    "rust_book_link": "https://doc.rust-lang.org/std/mem/fn.transmute.html"
+  },
+  {
+    "id": "unsafe-008",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "fn extend_lifetime<'a, 'b>(r: &'a str) -> &'b str {\n    unsafe { std::mem::transmute(r) }\n}",
+    "question": "Why is this dangerous?",
+    "options": [
+      "Allows returning reference that outlives the source data",
+      "transmute can't change lifetimes",
+      "Compile error: lifetime mismatch",
+      "Not dangerous, just unnecessary"
+    ],
+    "correct": 0,
+    "explanation": "This is a classic lifetime hole. Caller could get reference outliving the data, causing use-after-free.",
+    "rust_book_link": "https://doc.rust-lang.org/nomicon/transmutes.html"
+  },
+  {
+    "id": "unsafe-009",
+    "category": "unsafe",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "// Accessing union fields",
+    "question": "Which is correct for reading union fields?",
+    "options": [
+      "Always requires unsafe block",
+      "Safe if union implements Copy",
+      "Safe for repr(C) unions",
+      "Safe if field is actively set"
+    ],
+    "correct": 0,
+    "explanation": "All union field access requires unsafe because you might read uninitialized memory or violate type invariants.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/items/unions.html"
+  },
+  {
+    "id": "unsafe-010",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "use std::slice;\n\nfn main() {\n    let arr = [1, 2, 3, 4, 5];\n    let ptr = arr.as_ptr();\n    \n    let s = unsafe { slice::from_raw_parts(ptr, 10) };\n    println!(\"{:?}\", s);\n}",
+    "question": "What's wrong?",
+    "options": [
+      "Length 10 exceeds array bounds - undefined behavior",
+      "Can't create slice from array pointer",
+      "from_raw_parts requires mut pointer",
+      "Nothing, it pads with zeros"
+    ],
+    "correct": 0,
+    "explanation": "from_raw_parts doesn't validate length. Reading beyond bounds is UB. Must ensure [ptr, ptr+len) is valid.",
+    "error_line": 7,
+    "rust_book_link": "https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html"
+  },
+  {
+    "id": "own-007",
+    "category": "ownership",
+    "difficulty": 3,
+    "type": "spot_error",
+    "code": "fn main() {\n    let s = String::from(\"hello\");\n    let r1 = &s;\n    let r2 = &s;\n    println!(\"{} and {}\", r1, r2);\n    let r3 = &mut s;\n    println!(\"{}\", r3);\n}",
+    "question": "What's the problem?",
+    "options": [
+      "Can't take mutable reference while immutable refs are in scope",
+      "Too many immutable references",
+      "s needs to be mutable",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "r1 and r2's lifetimes extend past the mutable borrow attempt. Can't have &mut while & exists.",
+    "error_line": 6,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+  },
+  {
+    "id": "own-008",
+    "category": "ownership",
+    "difficulty": 4,
+    "type": "will_compile",
+    "code": "fn main() {\n    let mut s = String::from(\"hello\");\n    let r1 = &s;\n    println!(\"{}\", r1);\n    let r2 = &mut s;\n    r2.push_str(\" world\");\n    println!(\"{}\", r2);\n}",
+    "question": "Will this compile?",
+    "options": [
+      "Yes - r1's lifetime ends before r2 is created (NLL)",
+      "No - can't have immutable then mutable ref",
+      "No - s must be mut from the start",
+      "Yes - but only in Rust 2021 edition"
+    ],
+    "correct": 0,
+    "explanation": "Non-Lexical Lifetimes (NLL) end r1's lifetime after its last use, allowing r2 to borrow mutably.",
+    "rust_book_link": "https://doc.rust-lang.org/edition-guide/rust-2018/ownership-and-lifetimes/non-lexical-lifetimes.html"
+  },
+  {
+    "id": "own-009",
+    "category": "ownership",
+    "difficulty": 4,
+    "type": "fix_code",
+    "code": "struct Person {\n    name: String,\n}\n\nimpl Person {\n    fn get_name(&self) -> String {\n        self.name\n    }\n}",
+    "question": "How to fix the ownership issue?",
+    "options": [
+      "Return &str or clone: self.name.clone() or &self.name",
+      "Use move: move self.name",
+      "Add &: &self.name",
+      "Change to: *self.name"
+    ],
+    "correct": 0,
+    "explanation": "Can't move out of borrowed self. Either clone the String or return a reference &String or &str.",
+    "error_line": 7,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+  },
+  {
+    "id": "own-010",
+    "category": "ownership",
+    "difficulty": 3,
+    "type": "predict_output",
+    "code": "fn main() {\n    let s1 = String::from(\"hello\");\n    let s2 = s1.clone();\n    println!(\"{}\", s1);\n}",
+    "question": "What happens?",
+    "options": [
+      "Prints 'hello' - clone creates deep copy",
+      "Compile error - s1 was moved",
+      "Prints empty string",
+      "Runtime error"
+    ],
+    "correct": 0,
+    "explanation": "clone() creates a deep copy, so both s1 and s2 are valid separate String instances.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#variables-and-data-interacting-with-clone"
+  },
+  {
+    "id": "own-011",
+    "category": "ownership",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "fn main() {\n    let mut v = vec![1, 2, 3];\n    for i in &v {\n        v.push(*i + 1);\n    }\n}",
+    "question": "Why does this fail?",
+    "options": [
+      "Immutable iteration borrow conflicts with mutable push",
+      "Can't modify vector during iteration ever",
+      "Need to deref i differently",
+      "for doesn't create references"
+    ],
+    "correct": 0,
+    "explanation": "The for loop borrows v immutably, preventing the mutable borrow needed by push(). Classic iterator invalidation prevention.",
+    "error_line": 4,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+  },
+  {
+    "id": "own-012",
+    "category": "ownership",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "fn process(data: &Vec<i32>) -> i32 {\n    data.iter().sum()\n}",
+    "question": "Better signature?",
+    "options": [
+      "fn process(data: &[i32]) - more flexible slice parameter",
+      "fn process(data: Vec<i32>) - takes ownership",
+      "fn process(data: &mut Vec<i32>) - allows modification",
+      "Current signature is best"
+    ],
+    "correct": 0,
+    "explanation": "&[i32] accepts Vec, arrays, and slices via deref coercion. More flexible than &Vec<T>.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch15-02-deref.html"
+  },
+  {
+    "id": "own-013",
+    "category": "ownership",
+    "difficulty": 3,
+    "type": "will_compile",
+    "code": "fn first_word(s: &String) -> &str {\n    let bytes = s.as_bytes();\n    for (i, &item) in bytes.iter().enumerate() {\n        if item == b' ' {\n            return &s[0..i];\n        }\n    }\n    &s[..]\n}",
+    "question": "Is this safe?",
+    "options": [
+      "Yes - slice borrows from s, lifetime is valid",
+      "No - slice lifetime doesn't match s",
+      "No - can't return reference to local",
+      "No - as_bytes() borrows mutably"
+    ],
+    "correct": 0,
+    "explanation": "The slice &s[..] borrows from the input String, so the lifetime is correctly tied to the parameter.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-03-slices.html"
+  },
+  {
+    "id": "own-014",
+    "category": "ownership",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "fn main() {\n    let mut x = Box::new(5);\n    let y = &mut x;\n    let z = &mut x;\n    **y += 1;\n    **z += 1;\n}",
+    "question": "What's wrong?",
+    "options": [
+      "Multiple mutable borrows of x",
+      "Can't double-deref Box",
+      "Box doesn't support +=",
+      "Nothing, NLL fixes this"
+    ],
+    "correct": 0,
+    "explanation": "Can't have two simultaneous mutable borrows. Both y and z's lifetimes overlap when they're used.",
+    "error_line": 4,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+  },
+  {
+    "id": "own-015",
+    "category": "ownership",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "fn take_ownership(s: String) {\n    println!(\"{}\", s);\n}\n\nfn main() {\n    let s = String::from(\"hello\");\n    take_ownership(s.clone());\n    println!(\"{}\", s);\n}",
+    "question": "What happens?",
+    "options": [
+      "Prints 'hello' twice - clone preserves original",
+      "Compile error after first print",
+      "Prints 'hello' then empty string",
+      "Compile error: can't clone String"
+    ],
+    "correct": 0,
+    "explanation": "s.clone() creates a new String that's moved into the function. Original s remains valid.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+  },
+  {
+    "id": "async-004",
+    "category": "async_await",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "#[tokio::main]\nasync fn main() {\n    let data = fetch_data();\n    println!(\"Got: {:?}\", data);\n}\n\nasync fn fetch_data() -> String {\n    \"data\".to_string()\n}",
+    "question": "What's wrong?",
+    "options": [
+      "Missing .await on fetch_data() - it returns a Future",
+      "fetch_data needs tokio::spawn",
+      "async fn can't return String",
+      "println! can't be used in async"
+    ],
+    "correct": 0,
+    "explanation": "async fn returns a Future that must be .awaited. Without .await, data is a Future<String>, not String.",
+    "error_line": 3,
+    "rust_book_link": "https://rust-lang.github.io/async-book/01_getting_started/04_async_await_primer.html"
+  },
+  {
+    "id": "async-005",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "#[tokio::main]\nasync fn main() {\n    let handle1 = tokio::spawn(async { 1 });\n    let handle2 = tokio::spawn(async { 2 });\n    let result = handle1.await.unwrap() + handle2.await.unwrap();\n    println!(\"{}\", result);\n}",
+    "question": "What's the problem?",
+    "options": [
+      "None - this correctly spawns tasks and awaits them",
+      "Can't await handle1 and handle2 sequentially",
+      "spawn requires Send bound",
+      "Can't add JoinHandle results"
+    ],
+    "correct": 0,
+    "explanation": "This is valid. tokio::spawn returns JoinHandle which is awaitable. The tasks run concurrently, awaits are sequential.",
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/spawning"
+  },
+  {
+    "id": "async-006",
+    "category": "async_await",
+    "difficulty": 4,
+    "type": "fix_code",
+    "code": "async fn process(items: Vec<i32>) -> Vec<i32> {\n    items.into_iter().map(|x| async {\n        expensive_computation(x).await\n    }).collect()\n}\n\nasync fn expensive_computation(x: i32) -> i32 {\n    x * 2\n}",
+    "question": "What's the type error?",
+    "options": [
+      "Returns Vec<impl Future>, need futures::future::join_all",
+      "Can't use async in map",
+      "into_iter() doesn't work with async",
+      "collect() doesn't support async"
+    ],
+    "correct": 0,
+    "explanation": "map() creates an iterator of Futures, not awaited values. Use join_all or similar to await them concurrently.",
+    "rust_book_link": "https://rust-lang.github.io/async-book/06_multiple_futures/02_join.html"
+  },
+  {
+    "id": "async-007",
+    "category": "async_await",
+    "difficulty": 3,
+    "type": "predict_output",
+    "code": "#[tokio::main]\nasync fn main() {\n    let f1 = async { println!(\"1\"); };\n    let f2 = async { println!(\"2\"); };\n    println!(\"3\");\n}",
+    "question": "What prints?",
+    "options": [
+      "Only '3' - futures are never awaited",
+      "'1', '2', '3'",
+      "'3', '1', '2'",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "Futures are lazy. Without .await, f1 and f2 are never executed. Only '3' prints.",
+    "rust_book_link": "https://rust-lang.github.io/async-book/02_execution/01_chapter.html"
+  },
+  {
+    "id": "async-008",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "use std::rc::Rc;\n\n#[tokio::main]\nasync fn main() {\n    let data = Rc::new(vec![1, 2, 3]);\n    tokio::spawn(async move {\n        println!(\"{:?}\", data);\n    });\n}",
+    "question": "What's the issue?",
+    "options": [
+      "Rc is not Send - can't be sent across threads",
+      "Rc doesn't work with async",
+      "Need Arc instead of Rc - wait, that's the same issue",
+      "spawn requires 'static not move"
+    ],
+    "correct": 0,
+    "explanation": "tokio::spawn requires Send. Rc is not Send (not thread-safe). Use Arc for shared ownership across tasks.",
+    "error_line": 6,
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/spawning"
+  },
+  {
+    "id": "async-009",
+    "category": "async_await",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "// Which is better for running multiple independent async operations?",
+    "question": "To run 3 futures concurrently:",
+    "options": [
+      "tokio::join!(fut1, fut2, fut3) - concurrent execution",
+      "fut1.await; fut2.await; fut3.await; - sequential",
+      "Both are equivalent in performance",
+      "Use futures::join_all instead"
+    ],
+    "correct": 0,
+    "explanation": "tokio::join! runs futures concurrently and waits for all. Sequential awaits wait for each to complete before starting next.",
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/select#tokiojoin"
+  },
+  {
+    "id": "async-010",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "async fn process() -> Result<i32, String> {\n    Ok(42)\n}\n\n#[tokio::main]\nasync fn main() {\n    let result = process().await?;\n    println!(\"{}\", result);\n}",
+    "question": "Will this compile?",
+    "options": [
+      "No - main must return Result to use ?",
+      "Yes - async main supports ?",
+      "No - ? doesn't work with async",
+      "Yes - tokio::main wraps errors"
+    ],
+    "correct": 0,
+    "explanation": "? operator requires the function to return Result. main needs: async fn main() -> Result<(), Box<dyn Error>>",
+    "error_line": 7,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+  },
+  {
+    "id": "async-011",
+    "category": "async_await",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "use tokio::time::{sleep, Duration};\n\n#[tokio::main]\nasync fn main() {\n    let handle = tokio::spawn(async {\n        sleep(Duration::from_secs(1)).await;\n        println!(\"Task done\");\n    });\n    println!(\"Main done\");\n}",
+    "question": "What happens?",
+    "options": [
+      "Prints 'Main done' immediately, may not print 'Task done'",
+      "Waits 1 second, prints both",
+      "Prints 'Task done' then 'Main done'",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "spawn() doesn't block. Main exits immediately without awaiting the handle, possibly killing the task before it completes.",
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/spawning"
+  },
+  {
+    "id": "async-012",
+    "category": "async_await",
+    "difficulty": 3,
+    "type": "fix_code",
+    "code": "async fn fetch_user(id: i32) -> User {\n    // fetch user\n}\n\nfn process_user(user: User) {\n    // process\n}\n\nasync fn main() {\n    let user = fetch_user(1);\n    process_user(user);\n}",
+    "question": "How to fix?",
+    "options": [
+      "Add .await: let user = fetch_user(1).await;",
+      "Make process_user async",
+      "Remove async from fetch_user",
+      "Use tokio::spawn"
+    ],
+    "correct": 0,
+    "explanation": "fetch_user returns Future<User>, not User. Need .await to get the actual User value.",
+    "error_line": 10,
+    "rust_book_link": "https://rust-lang.github.io/async-book/01_getting_started/04_async_await_primer.html"
+  },
+  {
+    "id": "async-013",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "use tokio::sync::Mutex;\n\nasync fn increment(counter: &Mutex<i32>) {\n    let mut num = counter.lock().await;\n    *num += 1;\n}",
+    "question": "Is there an issue?",
+    "options": [
+      "No - this correctly uses async Mutex",
+      "Yes - should use std::sync::Mutex",
+      "Yes - lock() doesn't return await-able future",
+      "Yes - can't borrow counter across await"
+    ],
+    "correct": 0,
+    "explanation": "This is correct async Mutex usage. tokio::sync::Mutex::lock() is async and returns a guard that works across await points.",
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/shared-state"
+  },
+  {
+    "id": "macro-011",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "will_compile",
+    "code": "macro_rules! create_struct {\n    ($name:ident { $($field:ident: $type:ty),* }) => {\n        struct $name {\n            $($field: $type),*\n        }\n    };\n}\n\ncreate_struct!(Point { x: i32, y: i32 });",
+    "question": "Does this compile?",
+    "options": [
+      "Yes - creates struct Point { x: i32, y: i32 }",
+      "No - can't use ident for field names",
+      "No - struct creation requires unsafe",
+      "No - missing pub keyword"
+    ],
+    "correct": 0,
+    "explanation": "This is a valid declarative macro pattern for generating struct definitions. ident matches identifiers perfectly for field names.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-012",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "macro_rules! make_array {\n    ($val:expr; $count:expr) => {{\n        let mut arr = Vec::new();\n        for _ in 0..$count {\n            arr.push($val);\n        }\n        arr\n    }};\n}\n\nfn main() {\n    let x = String::from(\"hi\");\n    let arr = make_array!(x; 3);\n}",
+    "question": "What's wrong?",
+    "options": [
+      "$val is moved in first iteration, subsequent pushes fail",
+      "Can't use expr in for loop",
+      "$count must be const",
+      "Nothing, this works fine"
+    ],
+    "correct": 0,
+    "explanation": "String doesn't implement Copy. First push moves x, making it unavailable for subsequent iterations. Need to clone or take different approach.",
+    "error_line": 5,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-013",
+    "category": "macros",
+    "difficulty": 3,
+    "type": "idiomatic",
+    "code": "// Best practice for error handling in macros",
+    "question": "Which macro pattern is most maintainable?",
+    "options": [
+      "Return Result and let caller handle with ?",
+      "Use panic! for all errors",
+      "Use unwrap() internally",
+      "Macros shouldn't do error handling"
+    ],
+    "correct": 0,
+    "explanation": "Returning Result follows Rust conventions and gives callers control over error handling. Panicking limits flexibility.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch09-00-error-handling.html"
+  },
+  {
+    "id": "macro-014",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "macro_rules! log {\n    ($msg:expr) => {\n        println!(\"[LOG] {}\", $msg);\n    };\n    ($msg:expr, $($arg:tt)*) => {\n        println!(\"[LOG] {}\", format!($msg, $($arg)*));\n    };\n}\n\nfn main() {\n    log!(\"Count: {}\", 5);\n}",
+    "question": "What prints?",
+    "options": [
+      "[LOG] Count: 5",
+      "Compile error: ambiguous macro",
+      "[LOG] Count: {}",
+      "[LOG] 5"
+    ],
+    "correct": 0,
+    "explanation": "The second arm matches (expr with additional tokens). format! creates the string, which is then printed.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-015",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "macro_rules! impl_trait {\n    ($type:ty, $trait:ident, $method:ident, $body:expr) => {\n        impl $trait for $type {\n            fn $method(&self) {\n                $body\n            }\n        }\n    };\n}",
+    "question": "What limitation does this have?",
+    "options": [
+      "Can't handle generic traits or complex method signatures",
+      "Can't use ident for trait names",
+      "impl in macros requires unsafe",
+      "Nothing, it's complete"
+    ],
+    "correct": 0,
+    "explanation": "This simple macro can't handle traits with type parameters, associated types, or methods with different signatures. Real trait impls need more flexibility.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "smart-001",
+    "category": "traits_generics",
+    "difficulty": 3,
+    "type": "spot_error",
+    "code": "fn main() {\n    let x = Box::new(5);\n    let y = x;\n    println!(\"{}\", x);\n}",
+    "question": "What's wrong?",
+    "options": [
+      "Box was moved to y, can't use x anymore",
+      "Box can't be printed",
+      "Need to dereference x",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "Box<T> doesn't implement Copy. Assignment moves ownership to y, making x invalid.",
+    "error_line": 4,
+    "tags": [
+      "smart_pointers",
+      "box"
+    ]
+  },
+  {
+    "id": "smart-002",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "// When to use Box<T>?",
+    "question": "Best use case for Box<T>:",
+    "options": [
+      "Recursive types, trait objects, heap allocation",
+      "Reference counting",
+      "Thread-safe sharing",
+      "Interior mutability"
+    ],
+    "correct": 0,
+    "explanation": "Box provides heap allocation, enables recursive types (like linked lists), and stores trait objects. Use Rc for ref counting, Arc for threads.",
+    "tags": [
+      "smart_pointers",
+      "box"
+    ]
+  },
+  {
+    "id": "smart-003",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "use std::rc::Rc;\n\nfn main() {\n    let x = Rc::new(5);\n    let y = Rc::clone(&x);\n    println!(\"{} {}\", Rc::strong_count(&x), *y);\n}",
+    "question": "What does this print?",
+    "options": [
+      "2 5 - strong_count is 2, dereferenced value is 5",
+      "1 5",
+      "Compile error",
+      "2 (memory address)"
+    ],
+    "correct": 0,
+    "explanation": "Rc::clone increases the reference count without copying data. Two Rc pointers, strong_count is 2.",
+    "tags": [
+      "smart_pointers",
+      "rc"
+    ]
+  },
+  {
+    "id": "smart-004",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "use std::rc::Rc;\nuse std::thread;\n\nfn main() {\n    let data = Rc::new(vec![1, 2, 3]);\n    \n    thread::spawn(move || {\n        println!(\"{:?}\", data);\n    });\n}",
+    "question": "Why does this fail?",
+    "options": [
+      "Rc is not Send - can't cross thread boundaries",
+      "Rc doesn't work with vectors",
+      "thread::spawn requires Box",
+      "move doesn't work with Rc"
+    ],
+    "correct": 0,
+    "explanation": "Rc uses non-atomic reference counting, unsafe across threads. Use Arc (atomic Rc) for thread-safe sharing.",
+    "error_line": 7,
+    "tags": [
+      "smart_pointers",
+      "rc",
+      "threading"
+    ]
+  },
+  {
+    "id": "smart-005",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "use std::rc::Rc;\n\nstruct Node {\n    value: i32,\n    next: Option<Rc<Node>>,\n}\n\nfn append(node: &mut Node, new_node: Node) {\n    node.next = Some(Rc::new(new_node));\n}",
+    "question": "How to make this mutable linked list work?",
+    "options": [
+      "Use Rc<RefCell<Node>> for interior mutability",
+      "Use Arc instead of Rc",
+      "Make next field mutable",
+      "This already works"
+    ],
+    "correct": 0,
+    "explanation": "Rc provides shared ownership but not mutability. RefCell enables interior mutability, allowing mutation through shared references.",
+    "tags": [
+      "smart_pointers",
+      "rc",
+      "refcell"
+    ]
+  },
+  {
+    "id": "smart-006",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "use std::cell::RefCell;\n\nfn main() {\n    let data = RefCell::new(5);\n    *data.borrow_mut() += 10;\n    println!(\"{}\", data.borrow());\n}",
+    "question": "What prints?",
+    "options": [
+      "15 - borrow_mut allows mutation",
+      "5 - mutations don't persist",
+      "Runtime panic - borrow conflict",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "RefCell allows interior mutability. borrow_mut() provides mutable access, mutation persists after the borrow is dropped.",
+    "tags": [
+      "smart_pointers",
+      "refcell"
+    ]
+  },
+  {
+    "id": "smart-007",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "use std::cell::RefCell;\n\nfn main() {\n    let data = RefCell::new(vec![1, 2, 3]);\n    let b1 = data.borrow();\n    let b2 = data.borrow_mut();\n    println!(\"{:?}\", b1);\n}",
+    "question": "What happens?",
+    "options": [
+      "Runtime panic - can't borrow_mut while immutable borrow exists",
+      "Compile error",
+      "Prints [1, 2, 3]",
+      "b2 blocks until b1 is dropped"
+    ],
+    "correct": 0,
+    "explanation": "RefCell enforces borrowing rules at runtime. Having immutable and mutable borrows simultaneously causes panic.",
+    "error_line": 6,
+    "tags": [
+      "smart_pointers",
+      "refcell"
+    ]
+  },
+  {
+    "id": "smart-008",
+    "category": "traits_generics",
+    "difficulty": 3,
+    "type": "idiomatic",
+    "code": "// Choosing between Cell and RefCell",
+    "question": "When to use Cell<T> vs RefCell<T>?",
+    "options": [
+      "Cell for Copy types, RefCell for non-Copy types needing references",
+      "Cell for single-threaded, RefCell for multi-threaded",
+      "Cell is deprecated, use RefCell",
+      "They're interchangeable"
+    ],
+    "correct": 0,
+    "explanation": "Cell works with Copy types via get/set. RefCell provides references via borrow/borrow_mut for non-Copy types.",
+    "tags": [
+      "smart_pointers",
+      "cell",
+      "refcell"
+    ]
+  },
+  {
+    "id": "smart-009",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "use std::rc::{Rc, Weak};\n\nstruct Node {\n    parent: Option<Weak<Node>>,\n    children: Vec<Rc<Node>>,\n}\n\nfn main() {\n    let child = Rc::new(Node {\n        parent: None,\n        children: vec![],\n    });\n}",
+    "question": "Why use Weak for parent?",
+    "options": [
+      "Prevents reference cycles that would leak memory",
+      "Weak is faster than Rc",
+      "Parent doesn't need ownership",
+      "Weak is required for Option"
+    ],
+    "correct": 0,
+    "explanation": "Parent-child with Rc creates cycles. Weak doesn't contribute to ref count, preventing leaks when cycles exist.",
+    "tags": [
+      "smart_pointers",
+      "rc",
+      "weak"
+    ]
+  },
+  {
+    "id": "smart-010",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "use std::rc::{Rc, Weak};\n\nfn main() {\n    let strong = Rc::new(5);\n    let weak = Rc::downgrade(&strong);\n    drop(strong);\n    println!(\"{:?}\", weak.upgrade());\n}",
+    "question": "What prints?",
+    "options": [
+      "None - strong was dropped, weak.upgrade() returns None",
+      "Some(5)",
+      "Runtime panic",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "Weak doesn't keep data alive. After strong is dropped, upgrade() returns None since no strong references remain.",
+    "tags": [
+      "smart_pointers",
+      "weak"
+    ]
+  },
+  {
+    "id": "smart-011",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "use std::sync::Arc;\nuse std::thread;\n\nfn main() {\n    let data = Arc::new(vec![1, 2, 3]);\n    let data_clone = Arc::clone(&data);\n    \n    thread::spawn(move || {\n        data_clone.push(4);\n    });\n}",
+    "question": "Why does this fail?",
+    "options": [
+      "Arc provides shared ownership, not mutability",
+      "Arc can't be cloned",
+      "thread::spawn doesn't work with Arc",
+      "push requires Rc not Arc"
+    ],
+    "correct": 0,
+    "explanation": "Arc enables thread-safe sharing but not mutation. Need Arc<Mutex<Vec<i32>>> for shared mutable access.",
+    "error_line": 9,
+    "tags": [
+      "smart_pointers",
+      "arc"
+    ]
   }
 ]
