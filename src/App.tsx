@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { QuizCard } from './components/QuizCard';
 import { StatsPanel } from './components/StatsPanel';
 import { IOSInstallPrompt } from './components/IOSInstallPrompt';
+import { UpdatePrompt } from './components/UpdatePrompt';
 import { useApp } from './contexts/AppContext';
 import './App.css';
 
@@ -55,6 +56,7 @@ function App() {
       </footer>
 
       <IOSInstallPrompt />
+      <UpdatePrompt />
     </div>
   );
 }

@@ -27,6 +27,8 @@
   width: 100%;
   margin: 0 auto;
   padding: 2rem 1rem;
+  padding-left: calc(1rem + env(safe-area-inset-left));
+  padding-right: calc(1rem + env(safe-area-inset-right));
 }
 
 .view-toggle {
@@ -58,6 +60,9 @@
 
 .app-footer {
   padding: 2rem;
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+  padding-left: calc(2rem + env(safe-area-inset-left));
+  padding-right: calc(2rem + env(safe-area-inset-right));
   text-align: center;
   color: var(--text-secondary);
   border-top: 1px solid var(--border-color);

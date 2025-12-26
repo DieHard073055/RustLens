@@ -3,6 +3,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
+  padding-top: calc(1rem + env(safe-area-inset-top));
+  padding-left: calc(2rem + env(safe-area-inset-left));
+  padding-right: calc(2rem + env(safe-area-inset-right));
   background: var(--bg-secondary);
   border-bottom: 2px solid var(--rust-orange);
 }

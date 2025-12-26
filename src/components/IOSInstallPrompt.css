@@ -16,6 +16,9 @@
 .ios-install-content {
   background: var(--bg-secondary);
   padding: 1.5rem;
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  padding-left: calc(1.5rem + env(safe-area-inset-left));
+  padding-right: calc(1.5rem + env(safe-area-inset-right));
   border-radius: 16px 16px 0 0;
   max-width: 500px;
   width: 100%;
