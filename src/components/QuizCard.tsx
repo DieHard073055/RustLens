@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './QuizCard.css';
 
 export function QuizCard() {
@@ -59,9 +61,26 @@ export function QuizCard() {
       </div>
 
       <div className="code-block">
-        <pre>
-          <code>{currentQuestion.code}</code>
-        </pre>
+        <SyntaxHighlighter
+          language="rust"
+          style={vscDarkPlus}
+          customStyle={{
+            margin: 0,
+            padding: '1.5rem',
+            background: 'var(--bg-primary)',
+            borderRadius: '12px',
+            fontSize: '0.95rem',
+          }}
+          showLineNumbers={true}
+          lineNumberStyle={{
+            minWidth: '3em',
+            paddingRight: '1em',
+            color: 'var(--text-secondary)',
+            opacity: 0.5,
+          }}
+        >
+          {currentQuestion.code}
+        </SyntaxHighlighter>
       </div>
 
       <div className="question">
