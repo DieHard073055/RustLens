@@ -1679,5 +1679,943 @@
       "smart_pointers",
       "arc"
     ]
+  },
+  {
+    "id": "macro-016",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "macro_rules! min {\n    ($x:expr) => ($x);\n    ($x:expr, $($y:expr),+) => {\n        std::cmp::min($x, min!($($y),+))\n    };\n}\n\nfn main() {\n    println!(\"{}\", min!(3, 1, 4, 1, 5));\n}",
+    "question": "What does this print?",
+    "options": [
+      "1 - recursive macro finds minimum",
+      "Compile error: infinite recursion",
+      "3",
+      "5"
+    ],
+    "correct": 0,
+    "explanation": "This macro recursively compares elements using std::cmp::min, correctly finding the minimum value of 1.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-017",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Declarative vs procedural macros",
+    "question": "When to use procedural macros over macro_rules?",
+    "options": [
+      "Custom derive, attribute macros, complex transformations",
+      "Simple repetition and pattern matching",
+      "Procedural macros are deprecated",
+      "Always use macro_rules first"
+    ],
+    "correct": 0,
+    "explanation": "Procedural macros (#[derive], #[attribute]) enable complex code generation impossible with declarative macros. Use macro_rules for simple patterns.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/procedural-macros.html"
+  },
+  {
+    "id": "macro-018",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "will_compile",
+    "code": "#[macro_export]\nmacro_rules! assert_eq_custom {\n    ($left:expr, $right:expr) => {{\n        match (&$left, &$right) {\n            (left_val, right_val) => {\n                if !(*left_val == *right_val) {\n                    panic!(\"assertion failed: {} == {}\", left_val, right_val);\n                }\n            }\n        }\n    }};\n}",
+    "question": "Why use match with references?",
+    "options": [
+      "Prevents moving values, evaluates expressions once",
+      "Required for comparison",
+      "match is faster than if",
+      "References are required for panic"
+    ],
+    "correct": 0,
+    "explanation": "Using match with references evaluates expressions once and avoids moving non-Copy types. Standard pattern for assertion macros.",
+    "rust_book_link": "https://doc.rust-lang.org/std/macro.assert_eq.html"
+  },
+  {
+    "id": "macro-019",
+    "category": "macros",
+    "difficulty": 3,
+    "type": "predict_output",
+    "code": "macro_rules! print_type {\n    ($val:expr) => {{\n        println!(\"Type: {}\", std::any::type_name_of_val(&$val));\n    }};\n}\n\nfn main() {\n    print_type!(42);\n    print_type!(\"hello\");\n}",
+    "question": "What does this print?",
+    "options": [
+      "Type: i32\\nType: &str",
+      "Compile error: type_name_of_val doesn't exist",
+      "Type: expr for both",
+      "Runtime error"
+    ],
+    "correct": 0,
+    "explanation": "type_name_of_val returns the type name as a string. Correctly prints the inferred types.",
+    "rust_book_link": "https://doc.rust-lang.org/std/any/fn.type_name_of_val.html"
+  },
+  {
+    "id": "macro-020",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "macro_rules! impl_display {\n    ($type:ty, $fmt:expr) => {\n        impl std::fmt::Display for $type {\n            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {\n                write!(f, $fmt, self)\n            }\n        }\n    };\n}",
+    "question": "What's the limitation?",
+    "options": [
+      "Can't access struct fields, $fmt must use self as whole",
+      "Can't implement Display via macros",
+      "write! doesn't work in macros",
+      "Nothing, this is complete"
+    ],
+    "correct": 0,
+    "explanation": "This macro can only format self as a whole. Accessing fields requires more complex macro patterns or procedural macros.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "unsafe-016",
+    "category": "unsafe",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "fn get_unchecked_demo() {\n    let v = vec![1, 2, 3];\n    unsafe {\n        let x = v.get_unchecked(5);\n        println!(\"{}\", x);\n    }\n}",
+    "question": "What's wrong?",
+    "options": [
+      "Index out of bounds - undefined behavior",
+      "get_unchecked requires mut",
+      "Can't print results from get_unchecked",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "get_unchecked skips bounds checking. Accessing index 5 in a 3-element vector is UB, likely causing a crash or reading garbage.",
+    "error_line": 4
+  },
+  {
+    "id": "unsafe-017",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Safe abstraction over unsafe code",
+    "question": "Best practice for unsafe in libraries:",
+    "options": [
+      "Provide safe public API, keep unsafe internal and well-documented",
+      "Mark entire module as unsafe",
+      "Avoid unsafe completely",
+      "Expose unsafe functions to give users control"
+    ],
+    "correct": 0,
+    "explanation": "Encapsulate unsafe in safe abstractions. Maintain invariants internally, expose safe API. Document all safety requirements.",
+    "rust_book_link": "https://doc.rust-lang.org/nomicon/safe-unsafe-meaning.html"
+  },
+  {
+    "id": "unsafe-018",
+    "category": "unsafe",
+    "difficulty": 4,
+    "type": "will_compile",
+    "code": "use std::mem::MaybeUninit;\n\nfn main() {\n    let mut x = MaybeUninit::<i32>::uninit();\n    unsafe {\n        x.write(42);\n        println!(\"{}\", x.assume_init());\n    }\n}",
+    "question": "Is this the correct pattern?",
+    "options": [
+      "Yes - write then assume_init is the standard MaybeUninit pattern",
+      "No - assume_init is always unsafe",
+      "No - need to use ptr::write instead",
+      "No - MaybeUninit can't hold i32"
+    ],
+    "correct": 0,
+    "explanation": "MaybeUninit is for working with uninitialized memory safely. write() initializes it, then assume_init() is safe to call.",
+    "rust_book_link": "https://doc.rust-lang.org/std/mem/union.MaybeUninit.html"
+  },
+  {
+    "id": "unsafe-019",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "predict_output",
+    "code": "fn main() {\n    let x = 5;\n    let ptr = &x as *const i32 as usize;\n    let back = ptr as *const i32;\n    unsafe {\n        println!(\"{}\", *back);\n    }\n}",
+    "question": "What happens?",
+    "options": [
+      "Likely prints 5, but technically relies on implementation details",
+      "Always prints 5 safely",
+      "Compile error - can't cast pointer to usize",
+      "Undefined behavior"
+    ],
+    "correct": 0,
+    "explanation": "Casting pointers to integers and back works in practice but is implementation-defined. Better to keep pointers as pointers.",
+    "rust_book_link": "https://doc.rust-lang.org/std/primitive.pointer.html"
+  },
+  {
+    "id": "unsafe-020",
+    "category": "unsafe",
+    "difficulty": 4,
+    "type": "fix_code",
+    "code": "unsafe fn dangerous() {\n    // Some unsafe operation\n}\n\nfn safe_wrapper() {\n    dangerous();\n}",
+    "question": "What's missing?",
+    "options": [
+      "Need unsafe block to call unsafe function",
+      "safe_wrapper must also be unsafe",
+      "Nothing, this compiles",
+      "dangerous() can't be called from safe code"
+    ],
+    "correct": 0,
+    "explanation": "Calling unsafe functions requires an unsafe block, making the caller acknowledge the safety contract.",
+    "error_line": 6,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html"
+  },
+  {
+    "id": "own-016",
+    "category": "ownership",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "fn process(data: &mut Vec<i32>) {\n    for item in data {\n        *item *= 2;\n    }\n}",
+    "question": "What needs to change?",
+    "options": [
+      "Use data.iter_mut() instead of data",
+      "Change to &Vec<i32>",
+      "Add unsafe block",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "Iterating with 'for item in data' tries to move data. Use data.iter_mut() to get mutable references.",
+    "error_line": 2
+  },
+  {
+    "id": "own-017",
+    "category": "ownership",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "struct Container {\n    data: Vec<i32>,\n}\n\nimpl Container {\n    fn get_data(self) -> Vec<i32> {\n        self.data\n    }\n}\n\nfn main() {\n    let c = Container { data: vec![1, 2, 3] };\n    let d = c.get_data();\n    println!(\"{:?}\", c.data);\n}",
+    "question": "What's wrong?",
+    "options": [
+      "get_data consumes self, c is moved",
+      "Can't return owned data",
+      "data is private",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "Method takes self (not &self), consuming the Container. Can't use c afterward. Use &self and clone, or just move.",
+    "error_line": 14
+  },
+  {
+    "id": "own-018",
+    "category": "ownership",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "fn process_strings(v: Vec<String>) -> Vec<String> {\n    v.into_iter()\n        .map(|s| s.to_uppercase())\n        .collect()\n}",
+    "question": "Is this efficient?",
+    "options": [
+      "Yes - into_iter() consumes vec, map transforms in place where possible",
+      "No - should use iter() instead",
+      "No - need to clone each string",
+      "No - collect() always allocates"
+    ],
+    "correct": 0,
+    "explanation": "into_iter() gives ownership of elements, avoiding clones. Map can transform in place. This is the idiomatic pattern.",
+    "rust_book_link": "https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect"
+  },
+  {
+    "id": "own-019",
+    "category": "ownership",
+    "difficulty": 5,
+    "type": "predict_output",
+    "code": "fn main() {\n    let mut x = Box::new(5);\n    let y = &mut x;\n    **y = 10;\n    let z = &mut x;\n    **z = 15;\n    println!(\"{}\", x);\n}",
+    "question": "What happens?",
+    "options": [
+      "Prints 15 - y's lifetime ends before z, NLL allows this",
+      "Compile error - two mutable borrows",
+      "Prints 10",
+      "Runtime panic"
+    ],
+    "correct": 0,
+    "explanation": "Non-lexical lifetimes: y's lifetime ends after its last use. z can borrow mutably afterward. Final value is 15.",
+    "rust_book_link": "https://doc.rust-lang.org/edition-guide/rust-2018/ownership-and-lifetimes/non-lexical-lifetimes.html"
+  },
+  {
+    "id": "own-020",
+    "category": "ownership",
+    "difficulty": 4,
+    "type": "fix_code",
+    "code": "fn split_first(s: &String) -> (&str, &str) {\n    let mid = s.len() / 2;\n    (&s[..mid], &s[mid..])\n}",
+    "question": "Better parameter type?",
+    "options": [
+      "Change to &str - more flexible, works with String, &str, literals",
+      "Change to String - take ownership",
+      "Add lifetime annotation",
+      "Current is best"
+    ],
+    "correct": 0,
+    "explanation": "&str is more flexible than &String. Accepts String (via deref), &str, and literals. Same functionality, better API.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch04-03-slices.html"
+  },
+  {
+    "id": "async-014",
+    "category": "async_await",
+    "difficulty": 4,
+    "type": "spot_error",
+    "code": "use tokio::time::{sleep, Duration};\n\n#[tokio::main]\nasync fn main() {\n    let handles: Vec<_> = (0..5)\n        .map(|i| async move {\n            sleep(Duration::from_millis(100)).await;\n            i * 2\n        })\n        .collect();\n    \n    for h in handles {\n        println!(\"{}\", h.await);\n    }\n}",
+    "question": "What's wrong?",
+    "options": [
+      "Need tokio::spawn to create tasks, or use join_all for futures",
+      "async move doesn't work in map",
+      "Can't await in for loop",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "map creates futures but doesn't run them. Need tokio::spawn (returns JoinHandle) or futures::future::join_all.",
+    "error_line": 12
+  },
+  {
+    "id": "async-015",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Choosing between tokio::spawn and spawning on executor",
+    "question": "When to use tokio::spawn vs task::spawn_local?",
+    "options": [
+      "spawn for Send futures, spawn_local for !Send (like Rc)",
+      "spawn_local is always faster",
+      "They're identical",
+      "spawn_local is deprecated"
+    ],
+    "correct": 0,
+    "explanation": "tokio::spawn requires Send. spawn_local allows !Send futures but must run on current thread. Use spawn for most cases.",
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/spawning"
+  },
+  {
+    "id": "async-016",
+    "category": "async_await",
+    "difficulty": 4,
+    "type": "will_compile",
+    "code": "use tokio::select;\n\n#[tokio::main]\nasync fn main() {\n    let mut a = async { 1 };\n    let mut b = async { 2 };\n    \n    select! {\n        val = a => println!(\"a: {}\", val),\n        val = b => println!(\"b: {}\", val),\n    }\n}",
+    "question": "What does select! do?",
+    "options": [
+      "Waits for first future to complete, cancels others",
+      "Waits for all futures",
+      "Runs futures in sequence",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "select! polls multiple futures concurrently, proceeds with first to complete. Others are dropped/canceled.",
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/select"
+  },
+  {
+    "id": "async-017",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "predict_output",
+    "code": "use tokio::sync::mpsc;\n\n#[tokio::main]\nasync fn main() {\n    let (tx, mut rx) = mpsc::channel(1);\n    \n    tokio::spawn(async move {\n        tx.send(\"hello\").await.unwrap();\n    });\n    \n    println!(\"{}\", rx.recv().await.unwrap());\n}",
+    "question": "Does this work correctly?",
+    "options": [
+      "Yes - channel passes message from task to main",
+      "No - channel capacity too small",
+      "No - can't await in main",
+      "No - spawn doesn't return the value"
+    ],
+    "correct": 0,
+    "explanation": "This is the standard pattern for communication between tasks using channels. Works correctly with buffer size 1.",
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/channels"
+  },
+  {
+    "id": "async-018",
+    "category": "async_await",
+    "difficulty": 4,
+    "type": "fix_code",
+    "code": "async fn process() -> Result<i32, std::io::Error> {\n    Ok(42)\n}\n\n#[tokio::main]\nasync fn main() {\n    let result = process().await.unwrap();\n    println!(\"{}\", result);\n}",
+    "question": "More idiomatic error handling?",
+    "options": [
+      "Use ? operator and return Result from main",
+      "Always use unwrap in async",
+      "Use match instead",
+      "Current is best"
+    ],
+    "correct": 0,
+    "explanation": "Async main can return Result. Using ? is more idiomatic than unwrap for propagating errors.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+  },
+  {
+    "id": "smart-031",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "use std::sync::{Arc, Mutex};\n\nstruct Database {\n    data: Arc<Mutex<Vec<String>>>,\n}\n\nimpl Database {\n    fn add(&self, item: String) {\n        let mut data = self.data.lock().unwrap();\n        data.push(item);\n        drop(data);\n        self.process();\n    }\n    \n    fn process(&self) {\n        let data = self.data.lock().unwrap();\n        for item in data.iter() {\n            println!(\"{}\", item);\n        }\n    }\n}",
+    "question": "Is the drop() necessary?",
+    "options": [
+      "No - guard is automatically dropped at end of scope",
+      "Yes - prevents deadlock",
+      "Yes - required for Mutex",
+      "Yes - Rust doesn't have automatic drops"
+    ],
+    "correct": 0,
+    "explanation": "MutexGuard implements Drop and releases the lock when it goes out of scope. Explicit drop() is redundant but doesn't hurt.",
+    "rust_book_link": "https://doc.rust-lang.org/std/sync/struct.MutexGuard.html"
+  },
+  {
+    "id": "smart-032",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "idiomatic",
+    "code": "use std::sync::Arc;\nuse std::sync::atomic::{AtomicBool, Ordering};\n\nstruct Flag {\n    inner: Arc<AtomicBool>,\n}",
+    "question": "Why use AtomicBool over Mutex<bool>?",
+    "options": [
+      "Lock-free, faster for simple flags, no possibility of deadlock",
+      "Required by Arc",
+      "Mutex doesn't work with bool",
+      "AtomicBool uses less memory"
+    ],
+    "correct": 0,
+    "explanation": "Atomics provide lock-free synchronization. Better performance for simple types. Mutex is overkill for a bool flag.",
+    "rust_book_link": "https://doc.rust-lang.org/std/sync/atomic/"
+  },
+  {
+    "id": "smart-033",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "use std::pin::Pin;\n\nasync fn example(data: Pin<&mut Vec<i32>>) {\n    data.as_ref().get_ref()[0];\n}",
+    "question": "What does Pin guarantee?",
+    "options": [
+      "Prevents moving the pinned value through safe code",
+      "Makes the value immutable",
+      "Requires unsafe to access",
+      "Adds thread safety"
+    ],
+    "correct": 0,
+    "explanation": "Pin prevents moving, crucial for self-referential types in async. The value can still be accessed but not moved.",
+    "rust_book_link": "https://doc.rust-lang.org/std/pin/index.html"
+  },
+  {
+    "id": "smart-034",
+    "category": "traits_generics",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "use std::rc::Rc;\n\nfn main() {\n    let a = Rc::new(vec![1, 2, 3]);\n    let b = Rc::clone(&a);\n    \n    println!(\"{}\", Rc::ptr_eq(&a, &b));\n    \n    let c = Rc::new(vec![1, 2, 3]);\n    println!(\"{}\", Rc::ptr_eq(&a, &c));\n}",
+    "question": "What prints?",
+    "options": [
+      "true false - a and b point to same allocation, c is different",
+      "true true - all have same value",
+      "false false",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "ptr_eq compares pointer addresses, not values. Cloned Rc points to same allocation, new Rc is different.",
+    "rust_book_link": "https://doc.rust-lang.org/std/rc/struct.Rc.html#method.ptr_eq"
+  },
+  {
+    "id": "smart-035",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "use std::sync::{Arc, RwLock};\n\nfn update(data: Arc<RwLock<Vec<i32>>>, val: i32) {\n    let mut w = data.write().unwrap();\n    w.push(val);\n    let r = data.read().unwrap();\n    println!(\"{:?}\", r);\n}",
+    "question": "What's the deadlock?",
+    "options": [
+      "Write lock held while trying to acquire read lock on same thread",
+      "Can't have write and read locks",
+      "Arc doesn't support multiple locks",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "RwLock deadlocks if same thread tries to acquire read while holding write. Drop write guard before reading.",
+    "error_line": 6,
+    "rust_book_link": "https://doc.rust-lang.org/std/sync/struct.RwLock.html"
+  },
+  {
+    "id": "macro-021",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "macro_rules! closure {\n    ($arg:ident, $body:expr) => {\n        |$arg| $body\n    };\n}\n\nfn main() {\n    let add_one = closure!(x, x + 1);\n    println!(\"{}\", add_one(5));\n}",
+    "question": "What's the issue?",
+    "options": [
+      "Works but hygiene means inner x different from outer x contexts",
+      "Can't create closures in macros",
+      "$body must be block, not expr",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "Macro hygiene means identifiers from macro definition are separate from call site. This works but can be confusing.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/macros-by-example.html#hygiene"
+  },
+  {
+    "id": "macro-022",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "will_compile",
+    "code": "macro_rules! swap {\n    ($a:expr, $b:expr) => {{\n        let temp = $a;\n        $a = $b;\n        $b = temp;\n    }};\n}\n\nfn main() {\n    let mut x = 1;\n    let mut y = 2;\n    swap!(x, y);\n}",
+    "question": "Does this work?",
+    "options": [
+      "No - can't assign to $a, expr can't be lvalue",
+      "Yes - swaps values",
+      "No - temp conflicts",
+      "Yes but needs std::mem::swap"
+    ],
+    "correct": 0,
+    "explanation": "expr fragment can't appear on left side of assignment. Would need to use std::mem::swap or pass as idents.",
+    "error_line": 4
+  },
+  {
+    "id": "macro-023",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Macro exporting best practices",
+    "question": "Best practice for exporting macros from libraries?",
+    "options": [
+      "Use #[macro_export] and document in module-level docs",
+      "Put macros in separate macro module",
+      "Never export macros from libraries",
+      "Always use procedural macros instead"
+    ],
+    "correct": 0,
+    "explanation": "#[macro_export] makes macros available at crate root. Document safety requirements and provide usage examples.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/macros-by-example.html#the-macro_export-attribute"
+  },
+  {
+    "id": "macro-024",
+    "category": "macros",
+    "difficulty": 4,
+    "type": "predict_output",
+    "code": "macro_rules! repeat {\n    ($e:expr; $n:expr) => {{\n        let mut v = Vec::new();\n        for _ in 0..$n {\n            v.push($e.clone());\n        }\n        v\n    }};\n}\n\nfn main() {\n    let v = repeat!(String::from(\"hi\"); 3);\n    println!(\"{}\", v.len());\n}",
+    "question": "What prints?",
+    "options": [
+      "3 - creates 3 clones of the string",
+      "Compile error - can't clone in macro",
+      "1",
+      "0"
+    ],
+    "correct": 0,
+    "explanation": "The macro clones the expression for each iteration. Creates a vector with 3 String instances.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "macro-025",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "macro_rules! build_struct {\n    ($name:ident { $($field:ident: $ty:ty = $val:expr),* }) => {\n        struct $name {\n            $($field: $ty),*\n        }\n        \n        impl $name {\n            fn new() -> Self {\n                Self {\n                    $($field: $val),*\n                }\n            }\n        }\n    };\n}",
+    "question": "What's a limitation?",
+    "options": [
+      "Can't generate different impls for different field types",
+      "Can't create structs with macros",
+      "impl blocks illegal in macros",
+      "Nothing, this is complete"
+    ],
+    "correct": 0,
+    "explanation": "This generates a basic constructor but can't customize per-field initialization or add custom methods. Complex logic needs procedural macros.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "expert-001",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "trait MyTrait {\n    fn method(&self) -> impl Iterator<Item = i32>;\n}",
+    "question": "Is this valid Rust?",
+    "options": [
+      "Yes in Rust 2021+ with RPITIT (return position impl trait in traits)",
+      "No - can't use impl Trait in traits",
+      "No - must use Box<dyn Iterator>",
+      "Only with #[feature] gate"
+    ],
+    "correct": 0,
+    "explanation": "Rust 1.75+ supports RPITIT, allowing impl Trait in trait method return types without boxing.",
+    "rust_book_link": "https://blog.rust-lang.org/2023/12/21/async-fn-rpit-in-traits.html"
+  },
+  {
+    "id": "expert-002",
+    "category": "lifetimes",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "struct Parser<'a> {\n    data: &'a str,\n}\n\nimpl<'a> Parser<'a> {\n    fn parse(&self) -> Result<&str, Error> {\n        // parsing logic\n    }\n}",
+    "question": "What's the lifetime issue in parse?",
+    "options": [
+      "Return type needs &'a str - tied to struct lifetime",
+      "Need &'self str",
+      "Result can't contain references",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "The returned &str should live as long as the Parser's data. Use &'a str to tie it to the struct's lifetime.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html"
+  },
+  {
+    "id": "expert-003",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "use std::mem::ManuallyDrop;\n\nfn main() {\n    let x = ManuallyDrop::new(String::from(\"hello\"));\n    // x is never dropped\n}",
+    "question": "What's the purpose of ManuallyDrop?",
+    "options": [
+      "Prevents automatic drop, useful for FFI and manual memory management",
+      "Required for all heap allocations",
+      "Makes types Copy",
+      "Only for unsafe code"
+    ],
+    "correct": 0,
+    "explanation": "ManuallyDrop disables drop. Useful when interfacing with C, or custom drop order. Memory leak if not manually dropped.",
+    "rust_book_link": "https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html"
+  },
+  {
+    "id": "expert-004",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "predict_output",
+    "code": "macro_rules! lazy_static {\n    ($name:ident : $ty:ty = $init:expr) => {\n        static $name: std::sync::OnceLock<$ty> = std::sync::OnceLock::new();\n        \n        impl $name {\n            fn get() -> &'static $ty {\n                $name.get_or_init(|| $init)\n            }\n        }\n    };\n}",
+    "question": "What pattern does this implement?",
+    "options": [
+      "Lazy static initialization - value created on first access",
+      "Eager initialization",
+      "Compile error - can't impl on static",
+      "Thread-local storage"
+    ],
+    "correct": 0,
+    "explanation": "OnceLock enables lazy initialization of statics. Common pattern for expensive one-time setup.",
+    "rust_book_link": "https://doc.rust-lang.org/std/sync/struct.OnceLock.html"
+  },
+  {
+    "id": "expert-005",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "async fn foo() -> impl Future<Output = i32> {\n    async { 42 }\n}",
+    "question": "Is this redundant?",
+    "options": [
+      "Yes - async fn already returns impl Future",
+      "No - double wrapping is required",
+      "No - different Future types",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "async fn returns Future automatically. The inner async {} creates a nested Future. Should just return 42.",
+    "rust_book_link": "https://rust-lang.github.io/async-book/01_getting_started/04_async_await_primer.html"
+  },
+  {
+    "id": "expert-006",
+    "category": "ownership",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Interior vs exterior mutability",
+    "question": "When to use Cell/RefCell over regular &mut?",
+    "options": [
+      "When you need mutation through shared (&) references",
+      "Always prefer interior mutability",
+      "Only in unsafe code",
+      "They're equivalent to &mut"
+    ],
+    "correct": 0,
+    "explanation": "Interior mutability trades compile-time for runtime borrow checking. Use when architecture requires mutation through & refs.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch15-05-interior-mutability.html"
+  },
+  {
+    "id": "expert-007",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "trait Foo<T> {\n    type Output;\n    fn process(&self, input: T) -> Self::Output;\n}\n\nimpl Foo<i32> for String {\n    type Output = usize;\n    fn process(&self, input: i32) -> usize {\n        self.len() + input as usize\n    }\n}",
+    "question": "What's the difference: generic param vs associated type?",
+    "options": [
+      "Generic param T allows multiple impls per type, associated type allows one",
+      "They're identical",
+      "Associated types are faster",
+      "Generic params are deprecated"
+    ],
+    "correct": 0,
+    "explanation": "Can impl Foo<i32> and Foo<String> for same type. Associated types define one impl per type.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-03-advanced-traits.html"
+  },
+  {
+    "id": "expert-008",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "fn split_at_mut<T>(slice: &mut [T], mid: usize) -> (&mut [T], &mut [T]) {\n    let len = slice.len();\n    let ptr = slice.as_mut_ptr();\n    \n    unsafe {\n        (\n            std::slice::from_raw_parts_mut(ptr, mid),\n            std::slice::from_raw_parts_mut(ptr.add(mid), len - mid),\n        )\n    }\n}",
+    "question": "Is this safe implementation?",
+    "options": [
+      "Yes - creates two non-overlapping mutable slices, standard pattern",
+      "No - two mutable pointers to same data",
+      "No - from_raw_parts_mut is always UB",
+      "No - need to check mid <= len"
+    ],
+    "correct": 0,
+    "explanation": "This is how std splits slices. Two pointers to different regions, meeting unsafe requirements. Should add bounds check though.",
+    "rust_book_link": "https://doc.rust-lang.org/src/core/slice/mod.rs.html#1977"
+  },
+  {
+    "id": "expert-009",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "predict_output",
+    "code": "macro_rules! gen_impl {\n    ($($trait:ident),+) => {\n        $(\n            impl $trait for MyType {}\n        )+\n    };\n}\n\nstruct MyType;\ngen_impl!(Clone, Debug, Default);",
+    "question": "What does this generate?",
+    "options": [
+      "Three separate impl blocks for MyType",
+      "Single impl block with three traits",
+      "Compile error - can't repeat impl",
+      "Nothing - macros can't generate impls"
+    ],
+    "correct": 0,
+    "explanation": "Repetition $( )+ expands to multiple impl blocks. Useful for generating boilerplate trait implementations.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch19-06-macros.html"
+  },
+  {
+    "id": "expert-010",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Stream vs Iterator",
+    "question": "When to use Stream over Iterator?",
+    "options": [
+      "Stream for async values arriving over time, Iterator for sync",
+      "Always use Stream in async code",
+      "They're identical",
+      "Iterator is deprecated"
+    ],
+    "correct": 0,
+    "explanation": "Stream is async Iterator. Use for values produced asynchronously (network, timers). Iterator for sync sequences.",
+    "rust_book_link": "https://rust-lang.github.io/async-book/05_streams/01_chapter.html"
+  },
+  {
+    "id": "expert-011",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "fn longest<'a, 'b>(x: &'a str, y: &'b str) -> &'a str \n    where 'b: 'a \n{\n    if x.len() > y.len() { x } else { y }\n}",
+    "question": "What does 'b: 'a mean?",
+    "options": [
+      "'b outlives 'a - y lives at least as long as x",
+      "'a outlives 'b",
+      "Syntax error",
+      "'a and 'b must be equal"
+    ],
+    "correct": 0,
+    "explanation": "Lifetime bound 'b: 'a means 'b outlives 'a. Allows returning &'a even when sourced from y.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/trait-bounds.html#lifetime-bounds"
+  },
+  {
+    "id": "expert-012",
+    "category": "ownership",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "struct SelfRef {\n    value: String,\n    pointer: *const String,\n}\n\nimpl SelfRef {\n    fn new(value: String) -> Self {\n        let mut s = SelfRef {\n            value,\n            pointer: std::ptr::null(),\n        };\n        s.pointer = &s.value;\n        s\n    }\n}",
+    "question": "What's the problem?",
+    "options": [
+      "Returning s moves it, invalidating self-reference - use Pin",
+      "Can't have raw pointers in structs",
+      "Nothing wrong",
+      "value must be Box<String>"
+    ],
+    "correct": 0,
+    "explanation": "Self-referential struct breaks when moved. s.pointer becomes dangling after return. Need Pin<Box<Self>>.",
+    "rust_book_link": "https://doc.rust-lang.org/std/pin/index.html"
+  },
+  {
+    "id": "expert-013",
+    "category": "smart_pointers",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "use std::sync::Arc;\nuse parking_lot::Mutex;\n\nstruct Data {\n    value: Arc<Mutex<i32>>,\n}",
+    "question": "Why parking_lot::Mutex over std::sync::Mutex?",
+    "options": [
+      "Faster, no poisoning, smaller size - but loses poison detection",
+      "Required by Arc",
+      "Always better than std",
+      "They're identical"
+    ],
+    "correct": 0,
+    "explanation": "parking_lot is often faster and simpler (no poison), but std::sync provides poison detection for panic safety.",
+    "rust_book_link": "https://docs.rs/parking_lot/"
+  },
+  {
+    "id": "expert-014",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "predict_output",
+    "code": "fn main() {\n    let x = vec![1, 2, 3];\n    let ptr = x.as_ptr();\n    drop(x);\n    unsafe {\n        println!(\"{}\", *ptr);\n    }\n}",
+    "question": "What happens?",
+    "options": [
+      "Undefined behavior - use after free, ptr is dangling",
+      "Prints 1",
+      "Compile error",
+      "Runtime panic"
+    ],
+    "correct": 0,
+    "explanation": "drop() deallocates x's memory. Dereferencing ptr accesses freed memory - classic use-after-free UB.",
+    "rust_book_link": "https://doc.rust-lang.org/nomicon/aliasing.html"
+  },
+  {
+    "id": "expert-015",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "trait Container {\n    fn items(&self) -> &Vec<i32>;\n}",
+    "question": "More flexible return type?",
+    "options": [
+      "Change to &[i32] - works with Vec, arrays, slices",
+      "Change to Vec<i32> - owned",
+      "Add impl Iterator<Item=i32>",
+      "Current is best"
+    ],
+    "correct": 0,
+    "explanation": "Returning &[i32] is more flexible than &Vec. Implementers can return references to any contiguous sequence.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch15-02-deref.html"
+  },
+  {
+    "id": "expert-016",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "async fn process_all(items: Vec<String>) {\n    for item in items {\n        tokio::spawn(async move {\n            // process item\n        });\n    }\n}",
+    "question": "What's the issue?",
+    "options": [
+      "Spawned tasks may outlive function, items processed after return",
+      "Can't spawn in loop",
+      "async move doesn't work here",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "spawn() doesn't wait for tasks. Function returns immediately, tasks run in background. Use join handles or task groups.",
+    "rust_book_link": "https://tokio.rs/tokio/tutorial/spawning"
+  },
+  {
+    "id": "expert-017",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "#[cfg(target_os = \"linux\")]\nfn platform_specific() {\n    println!(\"Linux\");\n}\n\n#[cfg(not(target_os = \"linux\"))]\nfn platform_specific() {\n    println!(\"Other\");\n}",
+    "question": "What is this pattern?",
+    "options": [
+      "Conditional compilation - includes different code per platform",
+      "Runtime branching",
+      "Compile error - duplicate functions",
+      "Macro-based polymorphism"
+    ],
+    "correct": 0,
+    "explanation": "#[cfg] is compile-time. Only one function definition included based on target. Zero runtime cost.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/conditional-compilation.html"
+  },
+  {
+    "id": "expert-018",
+    "category": "lifetimes",
+    "difficulty": 5,
+    "type": "predict_output",
+    "code": "fn foo() -> &'static str {\n    let s = String::from(\"hello\");\n    Box::leak(s.into_boxed_str())\n}",
+    "question": "Is Box::leak a valid pattern?",
+    "options": [
+      "Yes - intentionally leaks memory to get 'static lifetime",
+      "No - always a bug",
+      "No - Box can't leak",
+      "Yes but only in unsafe"
+    ],
+    "correct": 0,
+    "explanation": "Box::leak prevents drop, giving 'static ref. Valid for long-lived data, but creates intentional memory leak.",
+    "rust_book_link": "https://doc.rust-lang.org/std/boxed/struct.Box.html#method.leak"
+  },
+  {
+    "id": "expert-019",
+    "category": "ownership",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Zero-cost abstraction",
+    "question": "What makes Rust abstractions zero-cost?",
+    "options": [
+      "Compiler optimizations eliminate overhead at compile time",
+      "Runtime garbage collection",
+      "Dynamic dispatch is free",
+      "All abstractions have cost"
+    ],
+    "correct": 0,
+    "explanation": "Monomorphization, inlining, and other opts mean abstractions compile to same code as hand-written. No runtime cost.",
+    "rust_book_link": "https://blog.rust-lang.org/2015/05/11/traits.html"
+  },
+  {
+    "id": "expert-020",
+    "category": "smart_pointers",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "use std::sync::Arc;\nuse std::thread;\n\nlet data = Arc::new(vec![1, 2, 3]);\n\nlet handle = thread::spawn(|| {\n    println!(\"{:?}\", data);\n});",
+    "question": "How to fix closure capture?",
+    "options": [
+      "Clone Arc before closure: let data = Arc::clone(&data);",
+      "Use move keyword only",
+      "data doesn't need cloning",
+      "Use &data in closure"
+    ],
+    "correct": 0,
+    "explanation": "Need to clone Arc before move closure to give ownership to thread. Arc::clone increments refcount.",
+    "rust_book_link": "https://doc.rust-lang.org/book/ch16-03-shared-state.html"
+  },
+  {
+    "id": "expert-021",
+    "category": "unsafe",
+    "difficulty": 5,
+    "type": "spot_error",
+    "code": "fn extend_lifetime<'a>(s: &str) -> &'a str {\n    s\n}",
+    "question": "Is this safe?",
+    "options": [
+      "No - caller can create dangling reference by passing short-lived str",
+      "Yes - just returns input",
+      "Yes - lifetime elision handles it",
+      "No - need unsafe block"
+    ],
+    "correct": 0,
+    "explanation": "Allows caller to extend lifetime arbitrarily. Can return reference outliving source. Classic lifetime hole.",
+    "rust_book_link": "https://doc.rust-lang.org/nomicon/lifetimes.html"
+  },
+  {
+    "id": "expert-022",
+    "category": "traits_generics",
+    "difficulty": 5,
+    "type": "will_compile",
+    "code": "trait Animal {\n    const LEGS: u32;\n}\n\nstruct Dog;\nimpl Animal for Dog {\n    const LEGS: u32 = 4;\n}\n\nfn count_legs<T: Animal>() -> u32 {\n    T::LEGS\n}",
+    "question": "What are const trait items useful for?",
+    "options": [
+      "Compile-time constants associated with types/traits",
+      "Runtime configuration",
+      "Dynamic dispatch",
+      "Only for documentation"
+    ],
+    "correct": 0,
+    "explanation": "Associated consts provide compile-time values tied to types. Useful for sizes, capacities, feature flags.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/items/associated-items.html#associated-constants"
+  },
+  {
+    "id": "expert-023",
+    "category": "async_await",
+    "difficulty": 5,
+    "type": "predict_output",
+    "code": "use tokio::time::{sleep, Duration};\n\n#[tokio::main]\nasync fn main() {\n    let fut = async {\n        sleep(Duration::from_secs(1)).await;\n        println!(\"Done\");\n    };\n    println!(\"Started\");\n}",
+    "question": "What prints?",
+    "options": [
+      "Only 'Started' - future never awaited",
+      "'Started' then 'Done' after 1 sec",
+      "'Done' then 'Started'",
+      "Compile error"
+    ],
+    "correct": 0,
+    "explanation": "Futures are lazy. Without .await, fut is created but never executed. Only 'Started' prints.",
+    "rust_book_link": "https://rust-lang.github.io/async-book/02_execution/01_chapter.html"
+  },
+  {
+    "id": "expert-024",
+    "category": "macros",
+    "difficulty": 5,
+    "type": "idiomatic",
+    "code": "// Hygiene in macros",
+    "question": "What is macro hygiene?",
+    "options": [
+      "Prevents name collisions between macro and call site scopes",
+      "Memory safety for macros",
+      "Type checking for macros",
+      "Macro documentation"
+    ],
+    "correct": 0,
+    "explanation": "Hygiene ensures macro-internal variables don't conflict with caller's. Most macros are hygienic by default.",
+    "rust_book_link": "https://doc.rust-lang.org/reference/macros-by-example.html#hygiene"
+  },
+  {
+    "id": "expert-025",
+    "category": "ownership",
+    "difficulty": 5,
+    "type": "fix_code",
+    "code": "fn returns_closure() -> Box<dyn Fn(i32) -> i32> {\n    let num = 5;\n    Box::new(|x| x + num)\n}",
+    "question": "Why does this fail?",
+    "options": [
+      "Closure captures num by reference, but num dropped - use move",
+      "Can't return closures",
+      "Box doesn't work with Fn",
+      "Nothing wrong"
+    ],
+    "correct": 0,
+    "explanation": "Closure borrows num, but it goes out of scope. Use move || to capture by value: Box::new(move |x| x + num)",
+    "error_line": 3,
+    "rust_book_link": "https://doc.rust-lang.org/book/ch13-01-closures.html"
   }
 ]

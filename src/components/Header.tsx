@@ -3,10 +3,17 @@ import { useApp } from '../contexts/AppContext';
 import './Header.css';
 
 export function Header() {
-  const { settings, updateUserSettings } = useApp();
+  const { settings, updateUserSettings, questionCount, refreshQuestions } = useApp();
   const [showSettings, setShowSettings] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   if (!settings) return null;
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshQuestions();
+    setIsRefreshing(false);
+  };
 
   return (
     <>
@@ -16,13 +23,29 @@ export function Header() {
           <h1>RustLens</h1>
         </div>
 
-        <button
-          className="settings-button"
-          onClick={() => setShowSettings(!showSettings)}
-          aria-label="Settings"
-        >
-          ⚙️
-        </button>
+        <div className="header-actions">
+          <div className="question-counter" title="Total questions in bank">
+            📚 {questionCount}
+          </div>
+
+          <button
+            className="refresh-button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            aria-label="Refresh questions"
+            title="Reload questions from server"
+          >
+            {isRefreshing ? '⏳' : '🔄'}
+          </button>
+
+          <button
+            className="settings-button"
+            onClick={() => setShowSettings(!showSettings)}
+            aria-label="Settings"
+          >
+            ⚙️
+          </button>
+        </div>
       </header>
 
       {showSettings && (

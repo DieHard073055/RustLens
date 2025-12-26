@@ -26,6 +26,8 @@ interface AppContextType {
   nextQuestion: () => void;
   updateUserSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
   generateReport: () => Promise<PerformanceReport>;
+  refreshQuestions: () => Promise<void>;
+  questionCount: number;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -170,6 +172,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return generatePerformanceReport(stats, allProgress, questions);
   }
 
+  async function refreshQuestions() {
+    try {
+      setIsLoading(true);
+
+      // Force reload questions from JSON file
+      await bulkAddQuestions(questionsData as Question[]);
+      const loadedQuestions = await getAllQuestions();
+      setQuestions(loadedQuestions);
+
+      // Reload progress
+      const allProgress = await getAllProgress();
+      const newProgressMap = new Map(allProgress.map(p => [p.questionId, p]));
+      setProgressMap(newProgressMap);
+
+      // Select next question
+      if (loadedQuestions.length > 0) {
+        const questionIds = loadedQuestions.map(q => q.id);
+        const nextId = selectNextQuestion(questionIds, newProgressMap);
+        if (nextId) {
+          const question = loadedQuestions.find(q => q.id === nextId);
+          setCurrentQuestion(question || loadedQuestions[0]);
+        }
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Failed to refresh questions:', error);
+      setIsLoading(false);
+    }
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -182,6 +215,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         nextQuestion,
         updateUserSettings,
         generateReport,
+        refreshQuestions,
+        questionCount: questions.length,
       }}
     >
       {children}

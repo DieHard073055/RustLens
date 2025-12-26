@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header } from './components/Header';
 import { QuizCard } from './components/QuizCard';
 import { StatsPanel } from './components/StatsPanel';
+import { IOSInstallPrompt } from './components/IOSInstallPrompt';
 import { useApp } from './contexts/AppContext';
 import './App.css';
 
@@ -52,6 +53,8 @@ function App() {
           </a>
         </p>
       </footer>
+
+      <IOSInstallPrompt />
     </div>
   );
 }
